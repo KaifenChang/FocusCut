@@ -122,6 +122,7 @@ function loadSavedElements() {
         elements = { dividers: [], blocks: [], notes: [] };
         chrome.storage.local.remove([pageKey]);
       }
+
     } else {
       console.log('FocusCut: No saved elements found for this URL');
       
@@ -366,6 +367,8 @@ function createNote(noteData) {
   note.style.height = (noteData.height || 'auto');
   note.style.backgroundColor = noteData.color || '#f8f0cc';
   note.style.zIndex = '10000';
+  note.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+  note.style.border = 'none';
   
   // 添加刪除按鈕
   const deleteButton = document.createElement('div');
@@ -394,7 +397,7 @@ function createNote(noteData) {
   textarea.style.width = '100%';
   textarea.style.height = '100%';
   textarea.style.minHeight = '80px';
-  textarea.style.border = 'none';
+  textarea.style.border = '1px solid rgba(0,0,0,0.1)';
   textarea.style.resize = 'none';
   textarea.style.background = 'transparent';
   textarea.style.fontFamily = 'inherit';
@@ -402,13 +405,18 @@ function createNote(noteData) {
   textarea.style.padding = '8px';
   textarea.style.outline = 'none';
   textarea.style.lineHeight = '1.6';
-  textarea.style.boxShadow = 'inset 0 0 3px rgba(0,0,0,0.1)';
-  textarea.style.borderRadius = '2px';
+  textarea.style.boxShadow = 'none';
+  textarea.style.borderRadius = '4px';
+  textarea.style.transition = 'border-color 0.2s ease';
+  
   textarea.addEventListener('focus', () => {
-    textarea.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+    textarea.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+    textarea.style.borderColor = 'rgba(0,0,0,0.2)';
   });
+  
   textarea.addEventListener('blur', () => {
     textarea.style.backgroundColor = 'transparent';
+    textarea.style.borderColor = 'rgba(0,0,0,0.1)';
   });
   
   textarea.addEventListener('input', (e) => {
@@ -547,4 +555,4 @@ console.log('FocusCut: Script loaded on URL:', window.location.href);
 
 // 載入已保存的元素
 console.log('FocusCut Content: Loading saved elements');
-loadSavedElements(); 
+loadSavedElements(); loadSavedElements(); 
