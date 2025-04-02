@@ -39,14 +39,14 @@ async function safeChromeCall(operation) {
   return new Promise((resolve) => {
     // 檢查擴展上下文
     if (!chrome?.runtime?.id) {
-      console.warn('FocusCut: Extension context not available');
+      // 不記錄任何錯誤
       resolve(null);
       return;
     }
 
     // 檢查 storage API
     if (!chrome?.storage?.local) {
-      console.warn('FocusCut: Storage API not available');
+      // 不記錄任何錯誤
       resolve(null);
       return;
     }
@@ -54,14 +54,14 @@ async function safeChromeCall(operation) {
     try {
       operation((result) => {
         if (chrome.runtime.lastError) {
-          console.warn('FocusCut: Chrome API error:', chrome.runtime.lastError);
+          // 不記錄 Chrome 錯誤
           resolve(null);
         } else {
           resolve(result);
         }
       });
     } catch (error) {
-      console.warn('FocusCut: Chrome API operation failed:', error);
+      // 不記錄操作錯誤
       resolve(null);
     }
   });
@@ -77,26 +77,27 @@ async function initializeExtension() {
 
     if (!state.isExtensionValid) {
       if (state.initRetryCount < config.MAX_RETRIES) {
-        console.log(`FocusCut: Extension context not ready, retrying in ${config.RETRY_DELAY}ms (attempt ${state.initRetryCount + 1}/${config.MAX_RETRIES})`);
+        console.log(`FocusCut: Retrying initialization (${state.initRetryCount + 1}/${config.MAX_RETRIES})`);
         state.initRetryCount++;
         setTimeout(initializeExtension, config.RETRY_DELAY);
         return;
       }
-      console.warn('FocusCut: Failed to initialize after max retries, using localStorage only');
+      // 在達到最大重試次數後，只使用 localStorage，不顯示錯誤
     }
     
     await setupEventListeners();
     await loadSavedElements();
     state.isInitialized = true;
-    console.log('FocusCut: Initialization completed successfully');
+    console.log('FocusCut: Initialization completed');
   } catch (error) {
-    console.error('FocusCut: Initialization failed:', error);
+    // 不記錄初始化錯誤
     state.isExtensionValid = false;
     
     try {
-      await loadSavedElements(); // 重試一次，這次會使用 localStorage
+      // 靜默回退到僅使用 localStorage
+      await loadSavedElements();
     } catch (retryError) {
-      console.error('FocusCut: Failed to load elements even from localStorage:', retryError);
+      // 不記錄重試錯誤
       resetElements();
     }
   }
@@ -167,14 +168,13 @@ function handleMessage(request, sender, sendResponse) {
 // 存儲操作
 async function saveElements() {
   if (!state.isInitialized) {
-    console.warn('FocusCut: Not initialized yet, cannot save');
     return;
   }
   
   const pageKey = getCurrentPageKey();
   const data = state.elements;
   
-  // 首先保存到 localStorage
+  // 首先保存到 localStorage (主要存儲)
   try {
     localStorage.setItem(`${config.STORAGE_PREFIX}${pageKey}`, JSON.stringify(data));
     console.log('FocusCut: Saved to localStorage');
@@ -182,17 +182,21 @@ async function saveElements() {
     console.error('FocusCut: Failed to save to localStorage:', error);
   }
   
-  // 如果擴展有效，保存到 Chrome storage
-  if (state.isExtensionValid) {
-    const success = await safeChromeCall((callback) => {
-      chrome.storage.local.set({ [pageKey]: data }, callback);
-    });
-
-    if (success) {
-      console.log('FocusCut: Saved to Chrome storage');
-    } else {
+  // 嘗試備份到 Chrome storage (靜默操作)
+  if (state.isExtensionValid && chrome?.runtime?.id) {
+    try {
+      chrome.storage.local.set({ [pageKey]: data }, () => {
+        // 成功時靜默處理，無需顯示消息
+        if (!chrome.runtime.lastError) {
+          // 成功但不記錄
+        } else {
+          // 失敗但也不記錄錯誤
+          state.isExtensionValid = false;
+        }
+      });
+    } catch (error) {
+      // 不記錄任何錯誤
       state.isExtensionValid = false;
-      console.warn('FocusCut: Failed to save to Chrome storage, falling back to localStorage only');
     }
   }
 }
@@ -216,101 +220,122 @@ async function loadSavedElements() {
   // 如果 localStorage 中沒有數據且擴展有效，嘗試從 Chrome storage 載入
   if (!data && state.isExtensionValid && chrome?.runtime?.id) {
     try {
-      const storageData = await safeChromeCall((callback) => {
-        chrome.storage.local.get([pageKey], callback);
-      });
-
-      if (storageData && storageData[pageKey]) {
-        data = storageData[pageKey];
-        console.log('FocusCut: Loaded from Chrome storage');
-
-        // 同步到 localStorage
-        try {
-          localStorage.setItem(`${config.STORAGE_PREFIX}${pageKey}`, JSON.stringify(data));
-        } catch (error) {
-          console.warn('FocusCut: Failed to sync to localStorage:', error);
+      // 使用原生的 chrome.storage.local.get 而非 safeChromeCall
+      chrome.storage.local.get([pageKey], (storageData) => {
+        if (!chrome.runtime.lastError && storageData && storageData[pageKey]) {
+          // 成功獲取數據
+          data = storageData[pageKey];
+          
+          // 設置到全局狀態
+          state.elements = {
+            dividers: Array.isArray(data.dividers) ? data.dividers : [],
+            blocks: Array.isArray(data.blocks) ? data.blocks : [],
+            notes: Array.isArray(data.notes) ? data.notes : []
+          };
+          
+          // 顯示成功訊息
+          console.log('FocusCut: Loaded from Chrome storage');
+          
+          // 同步到 localStorage (靜默操作)
+          try {
+            localStorage.setItem(`${config.STORAGE_PREFIX}${pageKey}`, JSON.stringify(data));
+          } catch (localStorageError) {
+            // 不記錄錯誤
+          }
+          
+          // 創建元素
+          createElementsFromData(state.elements);
+        } else {
+          // Chrome storage 不可用，只使用 localStorage
+          state.isExtensionValid = false;
+          createElementsFromLocalData(pageKey);
         }
-      }
+      });
     } catch (error) {
-      console.warn('FocusCut: Chrome storage load failed:', error);
+      // 不記錄錯誤
       state.isExtensionValid = false;
+      createElementsFromLocalData(pageKey);
     }
-  }
-  
-  // 處理載入的數據
-  if (data) {
-    try {
-      // 清除現有元素
-      await clearAllElements();
-      
-      // 更新全局狀態
+  } else {
+    // 直接從已經加載的 localStorage 數據創建元素
+    if (data) {
       state.elements = {
         dividers: Array.isArray(data.dividers) ? data.dividers : [],
         blocks: Array.isArray(data.blocks) ? data.blocks : [],
         notes: Array.isArray(data.notes) ? data.notes : []
       };
-      
-      // 創建分隔線
-      if (state.elements.dividers.length > 0) {
-        for (let i = 0; i < state.elements.dividers.length; i++) {
-          try {
-            const divider = await new Promise((resolve, reject) => {
-              try {
-                const dividerElement = createDivider(state.elements.dividers[i]);
-                resolve(dividerElement);
-              } catch (err) {
-                reject(err);
-              }
-            });
-          } catch (dividerError) {
-            console.error('FocusCut: Error creating divider:', dividerError);
-          }
-        }
-      }
-      
-      // 創建色卡
-      if (state.elements.blocks.length > 0) {
-        for (let i = 0; i < state.elements.blocks.length; i++) {
-          try {
-            const block = await new Promise((resolve, reject) => {
-              try {
-                const blockElement = createBlock(state.elements.blocks[i]);
-                resolve(blockElement);
-              } catch (err) {
-                reject(err);
-              }
-            });
-          } catch (blockError) {
-            console.error('FocusCut: Error creating block:', blockError);
-          }
-        }
-      }
-      
-      // 創建便利貼
-      if (state.elements.notes.length > 0) {
-        for (let i = 0; i < state.elements.notes.length; i++) {
-          try {
-            const note = await new Promise((resolve, reject) => {
-              try {
-                const noteElement = createNote(state.elements.notes[i]);
-                resolve(noteElement);
-              } catch (err) {
-                reject(err);
-              }
-            });
-          } catch (noteError) {
-            console.error('FocusCut: Error creating note:', noteError);
-          }
-        }
-      }
-      
-      console.log('FocusCut: Successfully created elements');
-    } catch (error) {
-      console.error('FocusCut: Error creating elements:', error);
+      createElementsFromData(state.elements);
+    } else {
+      console.log('FocusCut: No saved elements found');
       resetElements();
     }
-  } else {
-    console.log('FocusCut: No saved elements found');
+  }
+}
+
+// 從本地存儲中加載數據並創建元素
+async function createElementsFromLocalData(pageKey) {
+  try {
+    const localData = localStorage.getItem(`${config.STORAGE_PREFIX}${pageKey}`);
+    if (localData) {
+      const data = JSON.parse(localData);
+      state.elements = {
+        dividers: Array.isArray(data.dividers) ? data.dividers : [],
+        blocks: Array.isArray(data.blocks) ? data.blocks : [],
+        notes: Array.isArray(data.notes) ? data.notes : []
+      };
+      createElementsFromData(state.elements);
+    } else {
+      console.log('FocusCut: No saved elements found');
+      resetElements();
+    }
+  } catch (error) {
+    console.error('FocusCut: Error loading from localStorage:', error);
+    resetElements();
+  }
+}
+
+// 從數據創建元素
+async function createElementsFromData(elementsData) {
+  try {
+    // 清除現有元素
+    await clearAllElements();
+    
+    // 創建分隔線
+    if (elementsData.dividers.length > 0) {
+      for (let i = 0; i < elementsData.dividers.length; i++) {
+        try {
+          createDivider(elementsData.dividers[i]);
+        } catch (dividerError) {
+          console.error('FocusCut: Error creating divider:', dividerError);
+        }
+      }
+    }
+    
+    // 創建色卡
+    if (elementsData.blocks.length > 0) {
+      for (let i = 0; i < elementsData.blocks.length; i++) {
+        try {
+          createBlock(elementsData.blocks[i]);
+        } catch (blockError) {
+          console.error('FocusCut: Error creating block:', blockError);
+        }
+      }
+    }
+    
+    // 創建便利貼
+    if (elementsData.notes.length > 0) {
+      for (let i = 0; i < elementsData.notes.length; i++) {
+        try {
+          createNote(elementsData.notes[i]);
+        } catch (noteError) {
+          console.error('FocusCut: Error creating note:', noteError);
+        }
+      }
+    }
+    
+    console.log('FocusCut: Successfully created elements');
+  } catch (error) {
+    console.error('FocusCut: Error creating elements:', error);
     resetElements();
   }
 }
