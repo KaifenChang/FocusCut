@@ -1,0 +1,106 @@
+{
+  "extName": {
+    "message": "FocusCut",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "一個幫助用戶專注閱讀長文章的Chrome擴充功能，提供分隔線和便利貼功能",
+    "description": "Extension description"
+  },
+  "dividerTitle": {
+    "message": "分隔線",
+    "description": "Title for divider section"
+  },
+  "addDivider": {
+    "message": "新增分隔線",
+    "description": "Button text for adding a divider"
+  },
+  "readingCardTitle": {
+    "message": "透明閱讀色卡",
+    "description": "Title for reading card section"
+  },
+  "addReadingCard": {
+    "message": "新增閱讀色卡",
+    "description": "Button text for adding a reading card"
+  },
+  "noteTitle": {
+    "message": "便利貼",
+    "description": "Title for sticky note section"
+  },
+  "addNote": {
+    "message": "新增便利貼",
+    "description": "Button text for adding a sticky note"
+  },
+  "customColor": {
+    "message": "自訂顏色",
+    "description": "Title for custom color button"
+  },
+  "instructionsTitle": {
+    "message": "使用說明：",
+    "description": "Title for instructions section"
+  },
+  "instructionDrag": {
+    "message": "所有元素都可以拖動調整位置",
+    "description": "Instruction for dragging elements"
+  },
+  "instructionDelete": {
+    "message": "滑鼠移至元素上可以看到刪除按鈕（右上角）",
+    "description": "Instruction for deleting elements"
+  },
+  "instructionResize": {
+    "message": "拖曳角落的圓點可以調整元素大小",
+    "description": "Instruction for resizing elements"
+  },
+  "instructionNoteInput": {
+    "message": "便利貼可以輸入多行文字筆記",
+    "description": "Instruction for using sticky notes"
+  },
+  "instructionAutoSave": {
+    "message": "所有更改都會自動保存",
+    "description": "Instruction about auto-saving"
+  },
+  "errorUnsupported": {
+    "message": "FocusCut 無法在此頁面上運作。",
+    "description": "Error message for unsupported pages"
+  },
+  "errorUseOnRegular": {
+    "message": "請在一般網頁上使用此擴充功能。",
+    "description": "Additional error message for unsupported pages"
+  },
+  "copyright": {
+    "message": "版權資訊",
+    "description": "Copyright page title"
+  },
+  "aboutLink": {
+    "message": "關於 FocusCut",
+    "description": "Link text to about page"
+  },
+  "versionInfo": {
+    "message": "版本",
+    "description": "Version label"
+  },
+  "developer": {
+    "message": "開發者",
+    "description": "Developer label"
+  },
+  "licenseInfo": {
+    "message": "授權條款",
+    "description": "License information label"
+  },
+  "mitLicense": {
+    "message": "MIT 授權",
+    "description": "MIT License name"
+  },
+  "mitLicenseText": {
+    "message": "特此免費授予任何取得本軟體及相關文件檔案（「軟體」）的人不受限制地處理本軟體的權利，包括但不限於使用、複製、修改、合併、發布、分發、再授權和/或出售本軟體的副本，以及允許被提供本軟體的人這樣做，但須符合以下條件：\n\n上述版權聲明和本許可聲明應包含在本軟體的所有副本或重要部分中。\n\n本軟體按「現狀」提供，不附帶任何形式的明示或暗示擔保，包括但不限於適銷性、特定用途適用性和非侵權性的擔保。在任何情況下，作者或版權持有人均不對任何索賠、損害或其他責任負責，無論是在合約、侵權或其他方面，與本軟體或本軟體的使用或其他交易有關。",
+    "description": "MIT License full text in Chinese"
+  },
+  "allRightsReserved": {
+    "message": "保留所有權利",
+    "description": "All rights reserved text"
+  },
+  "developerName": {
+    "message": "Kaifen Chang",
+    "description": "Developer name"
+  }
+} 

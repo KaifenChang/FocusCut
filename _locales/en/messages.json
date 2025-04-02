@@ -1,0 +1,106 @@
+{
+  "extName": {
+    "message": "FocusCut",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "A Chrome extension to help users focus on reading long articles by adding dividers and sticky notes",
+    "description": "Extension description"
+  },
+  "dividerTitle": {
+    "message": "Divider",
+    "description": "Title for divider section"
+  },
+  "addDivider": {
+    "message": "Add Divider",
+    "description": "Button text for adding a divider"
+  },
+  "readingCardTitle": {
+    "message": "Transparent Reading Card",
+    "description": "Title for reading card section"
+  },
+  "addReadingCard": {
+    "message": "Add Reading Card",
+    "description": "Button text for adding a reading card"
+  },
+  "noteTitle": {
+    "message": "Sticky Note",
+    "description": "Title for sticky note section"
+  },
+  "addNote": {
+    "message": "Add Sticky Note",
+    "description": "Button text for adding a sticky note"
+  },
+  "customColor": {
+    "message": "Custom Color",
+    "description": "Title for custom color button"
+  },
+  "instructionsTitle": {
+    "message": "Instructions:",
+    "description": "Title for instructions section"
+  },
+  "instructionDrag": {
+    "message": "All elements can be dragged to adjust position",
+    "description": "Instruction for dragging elements"
+  },
+  "instructionDelete": {
+    "message": "Hover over elements to see delete button (top right)",
+    "description": "Instruction for deleting elements"
+  },
+  "instructionResize": {
+    "message": "Drag corner dots to resize elements",
+    "description": "Instruction for resizing elements"
+  },
+  "instructionNoteInput": {
+    "message": "Sticky notes can have multi-line text",
+    "description": "Instruction for using sticky notes"
+  },
+  "instructionAutoSave": {
+    "message": "All changes are automatically saved",
+    "description": "Instruction about auto-saving"
+  },
+  "errorUnsupported": {
+    "message": "FocusCut cannot work on this page.",
+    "description": "Error message for unsupported pages"
+  },
+  "errorUseOnRegular": {
+    "message": "Please use this extension on regular web pages.",
+    "description": "Additional error message for unsupported pages"
+  },
+  "copyright": {
+    "message": "Copyright",
+    "description": "Copyright page title"
+  },
+  "aboutLink": {
+    "message": "About FocusCut",
+    "description": "Link text to about page"
+  },
+  "versionInfo": {
+    "message": "Version",
+    "description": "Version label"
+  },
+  "developer": {
+    "message": "Developer",
+    "description": "Developer label"
+  },
+  "licenseInfo": {
+    "message": "License",
+    "description": "License information label"
+  },
+  "mitLicense": {
+    "message": "MIT License",
+    "description": "MIT License name"
+  },
+  "mitLicenseText": {
+    "message": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
+    "description": "MIT License full text"
+  },
+  "allRightsReserved": {
+    "message": "All Rights Reserved",
+    "description": "All rights reserved text"
+  },
+  "developerName": {
+    "message": "Kaifen Chang",
+    "description": "Developer name"
+  }
+} 
