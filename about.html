@@ -6,24 +6,22 @@
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      max-width: 800px;
+      width: 300px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 15px;
       line-height: 1.6;
       color: #333;
     }
     
     .container {
-      border: 1px solid #eee;
       border-radius: 8px;
-      padding: 20px;
-      margin-top: 20px;
+      padding: 15px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     
     h1 {
       text-align: center;
-      font-size: 24px;
+      font-size: 20px;
       margin-bottom: 20px;
       color: #444;
     }
@@ -31,8 +29,8 @@
     .logo {
       display: block;
       margin: 0 auto 20px;
-      width: 100px;
-      height: 100px;
+      width: 80px;
+      height: 80px;
     }
     
     .item {
@@ -125,8 +123,8 @@
       background-color: white;
       padding: 20px;
       border-radius: 8px;
-      width: 80%;
-      max-width: 600px;
+      width: 90%;
+      max-width: 280px;
       max-height: 80vh;
       overflow-y: auto;
       position: relative;
@@ -159,28 +157,28 @@
 <body>
   <div class="container">
     <img src="images/icon128.png" alt="FocusCut Logo" class="logo">
-    <h1 id="title">About FocusCut</h1>
+    <h1 id="title">關於 FocusCut</h1>
     
     <div class="item">
-      <div class="label" id="version-label">Version:</div>
+      <div class="label" id="version-label">版本:</div>
       <div class="value">1.0</div>
     </div>
     
     <div class="item">
-      <div class="label" id="developer-label">Developer:</div>
+      <div class="label" id="developer-label">開發者:</div>
       <div class="value">Kaifen Chang</div>
     </div>
     
     <div class="item">
-      <div class="label" id="license-label">License:</div>
+      <div class="label" id="license-label">授權條款:</div>
       <div class="value">
-        <a href="#" id="license-value" class="license-link">MIT License</a>
+        <a href="#" id="license-value" class="license-link">MIT</a>
       </div>
     </div>
     
     <div class="footer">
-      <p>© 2025 <span id="developer-name">Kaifen Chang</span> <span id="rights-reserved">All Rights Reserved</span></p>
-      <a href="popup.html" class="back-link">← Back</a>
+      <p>© 2025 <span id="developer-name">Kaifen Chang</span> <span id="rights-reserved">保留所有權利</span></p>
+      <a href="popup.html" class="back-link" id="back-link">← Back</a>
     </div>
   </div>
 
@@ -193,6 +191,7 @@
     </div>
   </div>
   
+  <script src="scripts/i18n.js"></script>
   <script src="scripts/about.js"></script>
 </body>
 </html> 
