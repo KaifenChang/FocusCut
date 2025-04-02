@@ -102,5 +102,9 @@
   "developerName": {
     "message": "Kaifen Chang",
     "description": "Developer name"
+  },
+  "viewSourceCode": {
+    "message": "View Source Code",
+    "description": "Link text to view source code on GitHub"
   }
 } 

@@ -36,4 +36,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Copyright link
   document.getElementById('copyright-link').innerHTML = '?';
   document.getElementById('copyright-link').title = chrome.i18n.getMessage('aboutLink');
+
+  // 檢查 about.html
+  if (window.location.href.includes('about.html')) {
+    document.getElementById('title').textContent = chrome.i18n.getMessage('aboutTitle') || 'About FocusCut';
+    document.getElementById('version-label').textContent = chrome.i18n.getMessage('versionLabel') || 'Version:';
+    document.getElementById('developer-label').textContent = chrome.i18n.getMessage('developerLabel') || 'Developer:';
+    document.getElementById('license-label').textContent = chrome.i18n.getMessage('licenseLabel') || 'License:';
+    document.getElementById('developer-name').textContent = 'Kaifen Chang';
+    document.getElementById('rights-reserved').textContent = chrome.i18n.getMessage('rightsReserved') || 'All Rights Reserved';
+    document.getElementById('back-link').textContent = chrome.i18n.getMessage('backLink') || '← Back';
+    document.getElementById('modal-title').textContent = chrome.i18n.getMessage('licenseTitle') || 'MIT License';
+    document.getElementById('repo-link').textContent = chrome.i18n.getMessage('viewSourceCode') || '查看原始碼';
+  }
 }); 

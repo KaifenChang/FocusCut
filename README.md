@@ -2,7 +2,6 @@
 
 FocusCut 是一個專為提升閱讀和學習體驗而設計的 Chrome 擴展。它允許用戶在網頁上創建視覺輔助工具，包括分隔線、閱讀色卡和便利貼，幫助改善專注力和資訊整理。
 
-![FocusCut Logo](images/icon128.png)
 
 ## 功能特色
 
@@ -49,6 +48,59 @@ FocusCut 尊重您的隱私:
 ## 反饋與支持
 
 如有問題或建議，請通過 GitHub Issues 提交反饋。
+
+---
+
+# FocusCut (English)
+
+FocusCut is a Chrome extension designed to enhance your reading and learning experience. It allows you to create visual aids on web pages, including dividers, reading cards, and sticky notes, helping to improve focus and information organization.
+
+
+## Features
+
+- **Dividers**: Add horizontal dividers to separate content sections
+- **Reading Cards**: Use semi-transparent colored overlays to highlight important content
+- **Sticky Notes**: Add editable sticky notes to record notes and comments
+- **Custom Colors**: All elements support custom colors to suit personal preferences
+- **Drag & Resize**: All elements can be freely dragged and resized
+- **Auto-Save**: Page elements are automatically saved and persist after page refresh
+- **Multi-language Support**: Interface available in multiple languages
+
+## Installation
+
+1. Download from the [Chrome Web Store](https://chrome.google.com/webstore) (coming soon)
+2. Manual Installation:
+   - Download this repository and extract it
+   - Open `chrome://extensions/` in Chrome browser
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select the extracted directory
+
+## How to Use
+
+1. Click the FocusCut icon in the browser toolbar
+2. Select the type of element and color from the popup
+3. The element will be automatically added to the current page
+4. Drag to adjust element position, or use the handle in the bottom-right corner to resize
+5. Sticky notes support direct text editing
+6. Click the × button on elements to delete them
+
+## Privacy Policy
+
+FocusCut respects your privacy:
+- Does not collect any personal information
+- Does not track your browsing activity
+- All data is stored locally and is not uploaded to any servers
+
+## Developer Information
+
+- Developer: Kaifen Chang
+- Version: 1.0
+- License: MIT License
+
+## Feedback and Support
+
+For issues or suggestions, please submit feedback through GitHub Issues.
 
 ---
 

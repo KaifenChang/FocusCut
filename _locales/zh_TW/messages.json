@@ -96,11 +96,15 @@
     "description": "MIT License full text in Chinese"
   },
   "allRightsReserved": {
-    "message": "保留所有權利",
+    "message": "All Rights Reserved",
     "description": "All rights reserved text"
   },
   "developerName": {
     "message": "Kaifen Chang",
     "description": "Developer name"
+  },
+  "viewSourceCode": {
+    "message": "查看原始碼",
+    "description": "Link text to view source code on GitHub"
   }
 } 

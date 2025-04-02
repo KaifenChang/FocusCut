@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('modal-title').textContent = chrome.i18n.getMessage('mitLicense');
   document.getElementById('rights-reserved').textContent = chrome.i18n.getMessage('allRightsReserved');
   document.getElementById('developer-name').textContent = chrome.i18n.getMessage('developerName');
+  document.getElementById('repo-link').textContent = chrome.i18n.getMessage('viewSourceCode') || '查看原始碼';
   
   // 模態窗口操作
   const licenseLink = document.getElementById('license-value');
