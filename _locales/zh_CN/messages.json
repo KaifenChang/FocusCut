@@ -4,75 +4,75 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "使用分隔線、透明色塊與便利貼功能，自訂你的閱讀區塊，讓每一次專注閱讀都更有結構。提供筆記保存、自動同步。",
+    "message": "使用分隔线、透明色块与便利贴，打造结构化的阅读体验。支持笔记保存、自动同步。",
     "description": "Extension description"
   },
   "dividerTitle": {
-    "message": "分隔線",
+    "message": "分隔线",
     "description": "Title for divider section"
   },
   "addDivider": {
-    "message": "新增分隔線",
+    "message": "新增分隔线",
     "description": "Button text for adding a divider"
   },
   "readingCardTitle": {
-    "message": "透明閱讀色卡",
+    "message": "透明阅读色卡",
     "description": "Title for reading card section"
   },
   "addReadingCard": {
-    "message": "新增閱讀色卡",
+    "message": "新增阅读色卡",
     "description": "Button text for adding a reading card"
   },
   "noteTitle": {
-    "message": "便利貼",
+    "message": "便利贴",
     "description": "Title for sticky note section"
   },
   "addNote": {
-    "message": "新增便利貼",
+    "message": "新增便利贴",
     "description": "Button text for adding a sticky note"
   },
   "customColor": {
-    "message": "自訂顏色",
+    "message": "自定义颜色",
     "description": "Title for custom color button"
   },
   "instructionsTitle": {
-    "message": "使用說明：",
+    "message": "使用说明：",
     "description": "Title for instructions section"
   },
   "instructionDrag": {
-    "message": "所有元素都可以拖動調整位置",
+    "message": "所有元素都可以拖动调整位置",
     "description": "Instruction for dragging elements"
   },
   "instructionDelete": {
-    "message": "滑鼠移至元素上可以看到刪除按鈕（右上角）",
+    "message": "鼠标移至元素上可以看到删除按钮（右上角）",
     "description": "Instruction for deleting elements"
   },
   "instructionResize": {
-    "message": "拖曳角落的圓點可以調整元素大小",
+    "message": "拖拽角落的圆点可以调整元素大小",
     "description": "Instruction for resizing elements"
   },
   "instructionNoteInput": {
-    "message": "便利貼可以輸入多行文字筆記",
+    "message": "便利贴可以输入多行文字笔记",
     "description": "Instruction for using sticky notes"
   },
   "instructionAutoSave": {
-    "message": "所有更改都會自動保存",
+    "message": "所有更改都会自动保存",
     "description": "Instruction about auto-saving"
   },
   "errorUnsupported": {
-    "message": "FocusCut 無法在此頁面上運作。",
+    "message": "FocusCut 无法在此页面上运作。",
     "description": "Error message for unsupported pages"
   },
   "errorUseOnRegular": {
-    "message": "請在一般網頁上使用此擴充功能。",
+    "message": "请在普通网页上使用此扩展。",
     "description": "Additional error message for unsupported pages"
   },
   "copyright": {
-    "message": "版權資訊",
+    "message": "版权信息",
     "description": "Copyright page title"
   },
   "aboutLink": {
-    "message": "關於 FocusCut",
+    "message": "关于 FocusCut",
     "description": "Link text to about page"
   },
   "versionInfo": {
@@ -80,20 +80,20 @@
     "description": "Version label"
   },
   "developer": {
-    "message": "開發者",
+    "message": "开发者",
     "description": "Developer label"
   },
   "licenseInfo": {
-    "message": "授權條款",
+    "message": "授权条款",
     "description": "License information label"
   },
   "mitLicense": {
-    "message": "MIT 授權",
+    "message": "MIT 授权",
     "description": "MIT License name"
   },
   "mitLicenseText": {
     "message": "MIT License\n\nCopyright (c) 2025 Kaifen Chang\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included\nin all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
-    "description": "MIT License full text in Chinese"
+    "description": "MIT License full text"
   },
   "allRightsReserved": {
     "message": "All Rights Reserved",
@@ -104,19 +104,19 @@
     "description": "Developer name"
   },
   "viewSourceCode": {
-    "message": "查看原始碼",
+    "message": "查看源代码",
     "description": "Link text to view source code on GitHub"
   },
   "buyMeCoffee": {
-    "message": "請我喝杯咖啡",
+    "message": "请我喝杯咖啡",
     "description": "Buy me a coffee support link text"
   },
   "sponsorDeveloper": {
-    "message": "☕ 贊助開發者",
+    "message": "☕ 赞助开发者",
     "description": "Sponsor developer section title"
   },
   "sponsorMessage": {
-    "message": "FocusCut 是我獨立開發的小工具，希望它能幫助你更專注地閱讀。\n如果你覺得好用，可以考慮請我喝杯咖啡 💛",
+    "message": "FocusCut 是我独立开发的小工具，希望它能帮助你更专注地阅读。\n如果你觉得好用，可以考虑请我喝杯咖啡 💛",
     "description": "Sponsor message for the developer"
   }
 } 

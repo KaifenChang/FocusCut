@@ -4,7 +4,7 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "Customize your reading experience with dividers, transparent blocks, and sticky notes. Make every focused reading session more structured. Features note-saving and auto-sync.",
+    "message": "Create structured reading experiences with dividers, transparent blocks, and sticky notes. Features auto-saving and sync.",
     "description": "Extension description"
   },
   "dividerTitle": {
@@ -116,7 +116,7 @@
     "description": "Sponsor developer section title"
   },
   "sponsorMessage": {
-    "message": "FocusCut is a small tool I developed independently. I hope it helps you read more focused.\nIf you find it useful, perhaps you could buy me a coffee 💛",
+    "message": "FocusCut is a small tool I developed independently. I hope it helps you read more focused.\nIf you find it useful, consider buying me a coffee 💛",
     "description": "Sponsor message for the developer"
   }
 } 
