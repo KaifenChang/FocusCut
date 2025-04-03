@@ -1,5 +1,9 @@
 # FocusCut
 
+<div align="center">
+  <img src="banner/FocusCut.png" alt="FocusCut Banner" width="600">
+</div>
+
 FocusCut 是一個專為提升閱讀和學習體驗而設計的 Chrome 擴展。它允許用戶在網頁上創建視覺輔助工具，包括分隔線、閱讀色卡和便利貼，幫助改善專注力和資訊整理。
 
 
@@ -53,7 +57,6 @@ FocusCut 尊重您的隱私:
 
 # FocusCut (English)
 
-FocusCut is a Chrome extension designed to enhance your reading and learning experience. It allows you to create visual aids on web pages, including dividers, reading cards, and sticky notes, helping to improve focus and information organization.
 
 
 ## Features

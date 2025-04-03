@@ -92,7 +92,7 @@
     "description": "MIT License name"
   },
   "mitLicenseText": {
-    "message": "特此免費授予任何取得本軟體及相關文件檔案（「軟體」）的人不受限制地處理本軟體的權利，包括但不限於使用、複製、修改、合併、發布、分發、再授權和/或出售本軟體的副本，以及允許被提供本軟體的人這樣做，但須符合以下條件：\n\n上述版權聲明和本許可聲明應包含在本軟體的所有副本或重要部分中。\n\n本軟體按「現狀」提供，不附帶任何形式的明示或暗示擔保，包括但不限於適銷性、特定用途適用性和非侵權性的擔保。在任何情況下，作者或版權持有人均不對任何索賠、損害或其他責任負責，無論是在合約、侵權或其他方面，與本軟體或本軟體的使用或其他交易有關。",
+    "message": "MIT License\n\nCopyright (c) 2025 Kaifen Chang\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included\nin all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "description": "MIT License full text in Chinese"
   },
   "allRightsReserved": {
@@ -106,5 +106,17 @@
   "viewSourceCode": {
     "message": "查看原始碼",
     "description": "Link text to view source code on GitHub"
+  },
+  "buyMeCoffee": {
+    "message": "請我喝杯咖啡",
+    "description": "Buy me a coffee support link text"
+  },
+  "sponsorDeveloper": {
+    "message": "☕ 贊助開發者",
+    "description": "Sponsor developer section title"
+  },
+  "sponsorMessage": {
+    "message": "FocusCut 是我獨立開發的小工具，希望它能幫助你更專注地閱讀。\n如果你覺得好用，也許可以請我喝杯咖啡 💛",
+    "description": "Sponsor message for the developer"
   }
 } 
