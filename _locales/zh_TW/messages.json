@@ -4,7 +4,7 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "一個幫助用戶專注閱讀長文章的Chrome擴充功能，提供分隔線和便利貼功能",
+    "message": "使用分隔線、透明色塊與便利貼功能，自訂你的閱讀區塊，讓每一次專注閱讀都更有結構。支援筆記保存、自動同步。",
     "description": "Extension description"
   },
   "dividerTitle": {

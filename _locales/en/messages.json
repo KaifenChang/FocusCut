@@ -4,7 +4,7 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "A Chrome extension to help users focus on reading long articles by adding dividers and sticky notes",
+    "message": "Customize your reading experience with dividers, transparent blocks, and sticky notes. Make every focused reading session more structured. Features note-saving and auto-sync.",
     "description": "Extension description"
   },
   "dividerTitle": {
@@ -108,7 +108,7 @@
     "description": "Link text to view source code on GitHub"
   },
   "buyMeCoffee": {
-    "message": "Buy Me a Coffee",
+    "message": "Buy me a coffee",
     "description": "Buy me a coffee support link text"
   },
   "sponsorDeveloper": {

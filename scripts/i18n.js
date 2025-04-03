@@ -219,6 +219,9 @@
     
     // GitHub 連結
     updateRepoLink();
+    
+    // 贊助開發者區塊
+    updateCoffeeLink();
   }
   
   // 初始化彈出窗口
