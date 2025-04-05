@@ -1,13 +1,17 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
   "permissions": [
-    "storage",
     "activeTab",
-    "tabs"
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "file:///*"
   ],
   "background": {
     "service_worker": "scripts/background.js"
@@ -23,12 +27,11 @@
   "content_scripts": [
     {
       "matches": [
-        "http://*/*",
-        "https://*/*"
+        "http://localhost/*",
+        "file:///*"
       ],
-      "css": ["styles/content.css"],
       "js": ["scripts/content.js"],
-      "run_at": "document_end"
+      "css": ["styles/content.css"]
     }
   ],
   "icons": {
