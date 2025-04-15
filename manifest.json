@@ -6,12 +6,7 @@
   "default_locale": "en",
   "permissions": [
     "activeTab",
-    "storage",
-    "scripting"
-  ],
-  "host_permissions": [
-    "http://localhost/*",
-    "file:///*"
+    "storage"
   ],
   "background": {
     "service_worker": "scripts/background.js"
@@ -26,10 +21,7 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "http://localhost/*",
-        "file:///*"
-      ],
+      "matches": ["<all_urls>"],
       "js": ["scripts/content.js"],
       "css": ["styles/content.css"]
     }

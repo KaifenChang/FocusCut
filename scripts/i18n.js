@@ -178,6 +178,76 @@
     }
   }
   
+  // 遮色片功能
+  const readingMaskTitle = document.getElementById('reading-mask-title');
+  if (readingMaskTitle) {
+    readingMaskTitle.textContent = chrome.i18n.getMessage('readingMaskTitle');
+  }
+
+  const readingMaskDescription = document.getElementById('reading-mask-description');
+  if (readingMaskDescription) {
+    readingMaskDescription.textContent = chrome.i18n.getMessage('readingMaskDescription');
+  }
+
+  const toggleReadingMask = document.getElementById('toggle-reading-mask');
+  if (toggleReadingMask) {
+    toggleReadingMask.textContent = chrome.i18n.getMessage('enableReadingMask');
+  }
+
+  // 遮色片樣式標籤
+  const maskStyleLabel = document.getElementById('mask-style-label');
+  if (maskStyleLabel) {
+    maskStyleLabel.textContent = chrome.i18n.getMessage('maskStyleLabel');
+  }
+
+  // 遮色片樣式選項
+  const styleOptions = document.querySelectorAll('.style-option');
+  if (styleOptions.length > 0) {
+    // 為每個樣式選項設置翻譯
+    styleOptions.forEach(option => {
+      const style = option.getAttribute('data-style');
+      const spanElement = option.querySelector('span');
+      
+      if (spanElement) {
+        let messageKey = '';
+        switch (style) {
+          case 'blur-gray': 
+            messageKey = 'blurGrayStyle'; 
+            break;
+          case 'blur-dark': 
+            messageKey = 'blurDarkStyle'; 
+            break;
+          case 'solid-gray': 
+            messageKey = 'solidGrayStyle'; 
+            break;
+          case 'solid-dark': 
+            messageKey = 'solidDarkStyle'; 
+            break;
+        }
+        
+        if (messageKey) {
+          spanElement.textContent = chrome.i18n.getMessage(messageKey);
+        }
+      }
+    });
+  }
+  
+  // 螢光筆功能
+  const highlighterTitle = document.getElementById('highlighter-title');
+  if (highlighterTitle) {
+    highlighterTitle.textContent = chrome.i18n.getMessage('highlighterTitle');
+  }
+
+  const enableHighlighterButton = document.getElementById('enableHighlighter');
+  if (enableHighlighterButton) {
+    enableHighlighterButton.textContent = chrome.i18n.getMessage('enableHighlighter');
+  }
+
+  const highlighterCustomColor = document.getElementById('highlighterCustomColor');
+  if (highlighterCustomColor) {
+    highlighterCustomColor.title = chrome.i18n.getMessage('highlighterCustomColor');
+  }
+  
   // 初始化所有頁面元素
   function initializePage() {
     try {

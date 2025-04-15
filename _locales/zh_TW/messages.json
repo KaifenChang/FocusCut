@@ -97,7 +97,7 @@
   },
   "allRightsReserved": {
     "message": "All Rights Reserved",
-    "description": "All rights reserved text"
+    "description": "Copyright notice"
   },
   "developerName": {
     "message": "Kaifen Chang",
@@ -118,5 +118,73 @@
   "sponsorMessage": {
     "message": "FocusCut 是我獨立開發的小工具，希望它能幫助你更專注地閱讀。\n如果你覺得好用，可以考慮請我喝杯咖啡 💛",
     "description": "Sponsor message for the developer"
+  },
+  "readingMaskTitle": {
+    "message": "遮色片",
+    "description": "Title for the reading mask feature"
+  },
+  "readingMaskDescription": {
+    "message": "啟用遮色片，僅顯示當前閱讀行，減少視覺干擾。",
+    "description": "Description for the reading mask feature"
+  },
+  "enableReadingMask": {
+    "message": "啟用遮色片",
+    "description": "Button to enable reading mask"
+  },
+  "closeReadingMask": {
+    "message": "關閉遮色片",
+    "description": "Button to close the reading mask"
+  },
+  "adjustHeight": {
+    "message": "調整透明區域高度",
+    "description": "Label for the slider to adjust transparent area height"
+  },
+  "dragToAdjustMask": {
+    "message": "拖曳調整遮色片高度",
+    "description": "Tooltip for mask resize handle"
+  },
+  "maskStyleLabel": {
+    "message": "遮色片樣式:",
+    "description": "Label for mask style selection"
+  },
+  "blurGrayStyle": {
+    "message": "灰色模糊",
+    "description": "Blur gray mask style"
+  },
+  "blurDarkStyle": {
+    "message": "深色模糊",
+    "description": "Blur dark mask style"
+  },
+  "solidGrayStyle": {
+    "message": "灰色純色",
+    "description": "Solid gray mask style"
+  },
+  "solidDarkStyle": {
+    "message": "深色純色",
+    "description": "Solid dark mask style"
+  },
+  "lockPosition": {
+    "message": "固定在螢幕上 (目前會跟隨頁面滾動)",
+    "description": "Lock position tooltip"
+  },
+  "unlockPosition": {
+    "message": "取消固定 (目前已固定在螢幕上)",
+    "description": "Unlock position tooltip"
+  },
+  "highlighterTitle": {
+    "message": "螢光筆",
+    "description": "Title for highlighter feature"
+  },
+  "enableHighlighter": {
+    "message": "啟用螢光筆",
+    "description": "Button to enable highlighter"
+  },
+  "highlighterTooltip": {
+    "message": "螢光筆模式已啟動 - 選擇文字進行標記 (ESC退出)",
+    "description": "Tooltip shown when highlighter is active"
+  },
+  "highlighterCustomColor": {
+    "message": "自訂螢光筆顏色",
+    "description": "Custom color button for highlighter"
   }
 } 

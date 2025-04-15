@@ -110,13 +110,20 @@
   line-height: 1;
   z-index: 10001;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .focuscut-divider:hover .focuscut-delete-button,
 .focuscut-block:hover .focuscut-delete-button,
 .focuscut-sticky-note:hover .focuscut-delete-button {
   opacity: 1;
+}
+
+.focuscut-delete-button:hover {
+  background-color: #e74c3c;
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
 /* 大小控制器 */
@@ -129,7 +136,8 @@
   z-index: 10001;
   cursor: ew-resize;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .focuscut-divider .focuscut-resizer {
@@ -149,9 +157,227 @@
   opacity: 1;
 }
 
+.focuscut-resizer:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+}
+
 .focuscut-add-note-button, 
 p:hover .focuscut-add-note-button, 
 .focuscut-add-note-button::before, 
 .focuscut-add-note-button::after {
   display: none;
+}
+
+/* 移除遮色片拖拽控制條的樣式 */
+.focuscut-mask-drag-handle {
+  display: none !important;
+}
+
+.focuscut-reading-mask-top {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  background-color: rgba(120, 120, 120, 0.4) !important; /* 灰色半透明 */
+  backdrop-filter: blur(4px) !important; /* 模糊背景，更聚焦 */
+  z-index: 2147483647 !important; /* 最高z-index */
+  pointer-events: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.focuscut-reading-mask-bottom {
+  position: fixed !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  background-color: rgba(120, 120, 120, 0.4) !important; /* 灰色半透明 */
+  backdrop-filter: blur(4px) !important; /* 模糊背景，更聚焦 */
+  z-index: 2147483647 !important; /* 最高z-index */
+  pointer-events: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.focuscut-reading-mask-controls {
+  position: fixed !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  z-index: 2147483647 !important; /* 最高z-index */
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  background: white !important;
+  padding: 10px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+  pointer-events: auto !important;
+}
+
+.focuscut-reading-mask-controls button {
+  padding: 5px 10px !important;
+  background: #f0f0f0 !important;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  pointer-events: auto !important;
+}
+
+.focuscut-reading-mask-controls button:hover {
+  background: #e0e0e0 !important;
+}
+
+.focuscut-reading-mask-controls input {
+  width: 100% !important;
+  margin: 5px 0 !important;
+  pointer-events: auto !important;
+}
+
+/* 遮色片拖拽角點 */
+.focuscut-reading-mask-resizer {
+  position: absolute !important;
+  width: 14px !important;
+  height: 14px !important;
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  border-radius: 50% !important;
+  cursor: ns-resize !important;
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+  border: 2px solid rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;
+  transition: background-color 0.2s !important;
+}
+
+.focuscut-reading-mask-resizer:hover {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.focuscut-reading-mask-resizer-top {
+  right: 20px !important;
+  bottom: 0 !important;
+  transform: translateY(50%) !important;
+}
+
+.focuscut-reading-mask-resizer-bottom {
+  right: 20px !important;
+  top: 0 !important;
+  transform: translateY(-50%) !important;
+}
+
+/* 遮色片拖拽邊緣 */
+.focuscut-reading-mask-edge {
+  position: absolute !important;
+  width: 100% !important;
+  height: 8px !important;
+  background-color: rgba(200, 200, 200, 0) !important;
+  cursor: ns-resize !important;
+  pointer-events: auto !important;
+  z-index: 2147483647 !important;
+  transition: background-color 0.2s !important;
+}
+
+.focuscut-reading-mask-edge:hover {
+  background-color: rgba(180, 180, 180, 0.5) !important;
+}
+
+.focuscut-reading-mask-edge-bottom {
+  bottom: 0 !important;
+  border-bottom: 1px solid rgba(150, 150, 150, 0.6) !important;
+}
+
+.focuscut-reading-mask-edge-top {
+  top: 0 !important;
+  border-top: 1px solid rgba(150, 150, 150, 0.6) !important;
+}
+
+/* 鎖定按鈕樣式 */
+.focuscut-lock-button {
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  z-index: 10001;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  border: 1px solid #ccc;
+}
+
+/* 移除舊的按鈕指示器 */
+.focuscut-lock-button::after {
+  content: none;
+}
+
+/* 鎖定圖標 - 未鎖定狀態（開鎖+實心灰色） */
+.focuscut-lock-button .lock-icon {
+  width: 12px;
+  height: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3Cpath fill='%236E6E6E' d='M352 144c0-44.2 35.8-80 80-80s80 35.8 80 80v48c0 17.7 14.3 32 32 32s32-14.3 32-32V144C576 64.5 511.5 0 432 0S288 64.5 288 144v48H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V256c0-35.3-28.7-64-64-64H352V144z'/%3E%3C/svg%3E");
+}
+
+/* 與其他控制元素一起顯示 */
+.focuscut-divider:hover .focuscut-lock-button,
+.focuscut-block:hover .focuscut-lock-button,
+.focuscut-sticky-note:hover .focuscut-lock-button {
+  opacity: 1;
+}
+
+/* 鎖定按鈕懸停效果 */
+.focuscut-lock-button:hover {
+  background-color: #f9f9f9;
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+/* 鎖定按鈕的鎖定狀態 */
+.focuscut-lock-button[data-locked="true"] {
+  background-color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+.focuscut-lock-button[data-locked="true"] .lock-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='white' d='M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z'/%3E%3C/svg%3E");
+  width: 12px;
+  height: 12px;
+}
+
+.focuscut-lock-button[data-locked="true"]:hover {
+  background-color: #e74c3c;
+  transform: scale(1.1);
+}
+
+/* 鎖定狀態下的卡片陰影效果 */
+.focuscut-block[data-fixed="true"] {
+  box-shadow: none;
+}
+
+/* 螢光筆樣式 */
+.focuscut-highlighter {
+  position: absolute;
+  z-index: 9997;
+  pointer-events: none;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* 螢光筆游標樣式 */
+.focuscut-highlight-cursor {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M22,2L10,14L8,24L18,22L30,10L22,2z" stroke="black" stroke-width="2" fill="yellow"/></svg>') 3 29, auto !important;
+}
+
+/* 文字選擇時的游標樣式 */
+.focuscut-highlight-selecting {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M22,2L10,14L8,24L18,22L30,10L22,2z" stroke="black" stroke-width="2" fill="yellow"/></svg>') 3 29, auto !important;
+  user-select: text !important;
 } 
