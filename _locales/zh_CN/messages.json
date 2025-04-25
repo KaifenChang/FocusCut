@@ -180,7 +180,7 @@
     "description": "Button to enable highlighter"
   },
   "highlighterTooltip": {
-    "message": "荧光笔模式已启动 - 选择文字进行标记 (ESC退出)",
+    "message": "荧光笔模式已启动 - 选择文字进行标记 (点击笔盒中的光标图标退出)",
     "description": "Tooltip shown when highlighter is active"
   },
   "highlighterCustomColor": {

@@ -232,22 +232,6 @@
     });
   }
   
-  // 螢光筆功能
-  const highlighterTitle = document.getElementById('highlighter-title');
-  if (highlighterTitle) {
-    highlighterTitle.textContent = chrome.i18n.getMessage('highlighterTitle');
-  }
-
-  const enableHighlighterButton = document.getElementById('enableHighlighter');
-  if (enableHighlighterButton) {
-    enableHighlighterButton.textContent = chrome.i18n.getMessage('enableHighlighter');
-  }
-
-  const highlighterCustomColor = document.getElementById('highlighterCustomColor');
-  if (highlighterCustomColor) {
-    highlighterCustomColor.title = chrome.i18n.getMessage('highlighterCustomColor');
-  }
-  
   // 初始化所有頁面元素
   function initializePage() {
     try {
@@ -297,12 +281,10 @@
   // 初始化彈出窗口
   function initializePopupPage() {
     // 部分標題
-    updateElement('divider-title', 'dividerTitle', 'Divider');
     updateElement('reading-card-title', 'readingCardTitle', 'Reading Card');
     updateElement('note-title', 'noteTitle', 'Note');
     
     // 按鈕
-    updateElement('addDivider', 'addDivider', 'Add Divider');
     updateElement('addBlock', 'addReadingCard', 'Add Reading Card');
     updateElement('addNote', 'addNote', 'Add Note');
     
@@ -326,7 +308,7 @@
     }
     
     // 顏色按鈕
-    const customColorButtons = ['dividerCustomColor', 'blockCustomColor', 'noteCustomColor'];
+    const customColorButtons = ['blockCustomColor', 'noteCustomColor'];
     for (let i = 0; i < customColorButtons.length; i++) {
       const button = document.getElementById(customColorButtons[i]);
       if (button) {

@@ -1,4 +1,4 @@
-.focuscut-divider {
+x9.focuscut-divider {
   position: absolute;
   width: 100%;
   height: 3px;
@@ -174,63 +174,69 @@ p:hover .focuscut-add-note-button,
   display: none !important;
 }
 
-.focuscut-reading-mask-top {
+.focuscut-reading-mask-top,
+.focuscut-reading-mask-bottom {
   position: fixed !important;
-  left: 0 !important;
-  top: 0 !important;
   width: 100% !important;
-  background-color: rgba(120, 120, 120, 0.4) !important; /* 灰色半透明 */
+  left: 0 !important;
   backdrop-filter: blur(4px) !important; /* 模糊背景，更聚焦 */
-  z-index: 2147483647 !important; /* 最高z-index */
+  z-index: 2147483645 !important; /* 降低遮色片的z-index順序 */
   pointer-events: none !important;
   transition: all 0.2s ease !important;
+}
+
+.focuscut-reading-mask-top {
+  top: 0 !important;
 }
 
 .focuscut-reading-mask-bottom {
-  position: fixed !important;
-  left: 0 !important;
   bottom: 0 !important;
-  width: 100% !important;
-  background-color: rgba(120, 120, 120, 0.4) !important; /* 灰色半透明 */
-  backdrop-filter: blur(4px) !important; /* 模糊背景，更聚焦 */
-  z-index: 2147483647 !important; /* 最高z-index */
-  pointer-events: none !important;
-  transition: all 0.2s ease !important;
 }
 
+/* 修改控制按鈕樣式，保持視覺一致性 */
 .focuscut-reading-mask-controls {
   position: fixed !important;
-  right: 20px !important;
-  bottom: 20px !important;
-  z-index: 2147483647 !important; /* 最高z-index */
+  top: 15px !important;
+  right: 15px !important;
   display: flex !important;
-  flex-direction: column !important;
   gap: 10px !important;
-  background: white !important;
-  padding: 10px !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+  z-index: 2147483646 !important; /* 降低z-index順序，確保筆盒可以顯示在上方 */
   pointer-events: auto !important;
 }
 
-.focuscut-reading-mask-controls button {
-  padding: 5px 10px !important;
-  background: #f0f0f0 !important;
-  border: 1px solid #ccc !important;
-  border-radius: 4px !important;
-  cursor: pointer !important;
+.focuscut-reading-mask-controls button,
+.focuscut-close-button {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background-color: rgba(180, 180, 180, 0.85) !important; /* 更淺的灰色背景 */
+  color: white !important;
   font-size: 14px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.2s ease !important;
   pointer-events: auto !important;
 }
 
-.focuscut-reading-mask-controls button:hover {
-  background: #e0e0e0 !important;
+.focuscut-reading-mask-controls button:hover,
+.focuscut-close-button:hover {
+  transform: scale(1.05) !important;
+  background-color: rgba(160, 160, 160, 1) !important; /* 懸停時更淺的深灰色 */
 }
 
-.focuscut-reading-mask-controls input {
-  width: 100% !important;
-  margin: 5px 0 !important;
-  pointer-events: auto !important;
+/* 圖示樣式 */
+.focuscut-close-icon {
+  width: 16px !important;
+  height: 16px !important;
+  display: block !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M6 18L18 6M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') !important;
 }
 
 /* 遮色片拖拽角點 */
@@ -268,11 +274,11 @@ p:hover .focuscut-add-note-button,
 .focuscut-reading-mask-edge {
   position: absolute !important;
   width: 100% !important;
-  height: 8px !important;
-  background-color: rgba(200, 200, 200, 0) !important;
+  height: 10px !important;
+  background-color: rgba(200, 200, 200, 0.1) !important;
   cursor: ns-resize !important;
   pointer-events: auto !important;
-  z-index: 2147483647 !important;
+  z-index: 2147483646 !important; /* 降低z-index順序，確保筆盒可以顯示在上方 */
   transition: background-color 0.2s !important;
 }
 
@@ -294,21 +300,20 @@ p:hover .focuscut-add-note-button,
 .focuscut-lock-button {
   position: absolute;
   top: -10px;
-  right: 20px;
-  width: 20px;
-  height: 20px;
+  right: 15px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background-color: #fff;
+  background-color: #eb6d6d;
   cursor: pointer;
   opacity: 0;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
   z-index: 10001;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border: none;
 }
 
 /* 移除舊的按鈕指示器 */
@@ -316,14 +321,14 @@ p:hover .focuscut-add-note-button,
   content: none;
 }
 
-/* 鎖定圖標 - 未鎖定狀態（開鎖+實心灰色） */
+/* 鎖定圖標 */
 .focuscut-lock-button .lock-icon {
   width: 12px;
   height: 12px;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3Cpath fill='%236E6E6E' d='M352 144c0-44.2 35.8-80 80-80s80 35.8 80 80v48c0 17.7 14.3 32 32 32s32-14.3 32-32V144C576 64.5 511.5 0 432 0S288 64.5 288 144v48H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V256c0-35.3-28.7-64-64-64H352V144z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3Cpath fill='white' d='M352 144c0-44.2 35.8-80 80-80s80 35.8 80 80v48c0 17.7 14.3 32 32 32s32-14.3 32-32V144C576 64.5 511.5 0 432 0S288 64.5 288 144v48H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V256c0-35.3-28.7-64-64-64H352V144z'/%3E%3C/svg%3E");
 }
 
 /* 與其他控制元素一起顯示 */
@@ -335,15 +340,15 @@ p:hover .focuscut-add-note-button,
 
 /* 鎖定按鈕懸停效果 */
 .focuscut-lock-button:hover {
-  background-color: #f9f9f9;
+  background-color: #e74c3c;
   transform: scale(1.1);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.25);
 }
 
 /* 鎖定按鈕的鎖定狀態 */
 .focuscut-lock-button[data-locked="true"] {
-  background-color: #ff6b6b;
-  border-color: #ff6b6b;
+  background-color: #a7a7a7;
+  border-color: #a7a7a7;
 }
 
 .focuscut-lock-button[data-locked="true"] .lock-icon {
@@ -353,7 +358,7 @@ p:hover .focuscut-add-note-button,
 }
 
 .focuscut-lock-button[data-locked="true"]:hover {
-  background-color: #e74c3c;
+  background-color: #888888;
   transform: scale(1.1);
 }
 
@@ -380,4 +385,223 @@ p:hover .focuscut-add-note-button,
 .focuscut-highlight-selecting {
   cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M22,2L10,14L8,24L18,22L30,10L22,2z" stroke="black" stroke-width="2" fill="yellow"/></svg>') 3 29, auto !important;
   user-select: text !important;
+}
+
+/* 遮色片樣式預覽 */
+.style-selection {
+  margin: 10px 0;
+}
+
+.style-options {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.style-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.style-option:hover {
+  opacity: 1;
+}
+
+.style-option.selected {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.style-preview {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.white-blur {
+  background-color: rgba(245, 245, 245, 0.4); /* #F5F5F5 with opacity 0.4 */
+  position: relative;
+}
+
+.light-blur-gray {
+  background-color: rgba(211, 211, 211, 0.4); /* #D3D3D3 with opacity 0.4 */
+  position: relative;
+}
+
+.dark-blur-gray {
+  background-color: rgba(169, 169, 169, 0.4); /* #A9A9A9 with opacity 0.4 */
+  position: relative;
+}
+
+.white-blur::after,
+.light-blur-gray::after,
+.dark-blur-gray::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><rect width="1" height="1" fill="white"/></svg>');
+  opacity: 0.2;
+  filter: blur(1px);
+  border-radius: 6px;
+}
+
+/* 遮色片顏色預設選項與便利貼顏色預設選項保持一致 */
+.mask-preset {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
+}
+
+.mask-preset:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* 被選中的遮色片顏色樣式與便利貼相同 */
+.mask-preset.selected {
+  border: 2px solid rgba(0,0,0,0.3);
+  transform: scale(1.05);
+}
+
+/* 移除不需要的舊樣式 */
+.mask-colors,
+.mask-color-option,
+.mask-color-circle,
+.white-blur-circle,
+.light-gray-circle,
+.dark-gray-circle {
+  display: none;
+}
+
+/* 螢光筆筆盒樣式 */
+#focuscut-pen-box {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  background-color: #f0f0f0;
+  background-image: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2147483647 !important; /* 確保在遮色片上層顯示 */
+  border: 1px solid #ddd;
+  width: 48px;
+  transition: opacity 0.3s ease;
+  opacity: 0.85;
+}
+
+/* 添加筆盒內部的陰影，使它看起來有深度 */
+#focuscut-pen-box::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border-radius: 10px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  pointer-events: none;
+}
+
+#focuscut-pen-box:hover {
+  transform: scale(1.05);
+}
+
+/* 淡出效果 - 避免筆盒一直搶佔視覺焦點 */
+#focuscut-pen-box {
+  opacity: 0.8;
+}
+
+#focuscut-pen-box:hover {
+  opacity: 1;
+}
+
+/* 筆盒內的螢光筆樣式 */
+.focuscut-highlighter-pen, .focuscut-pen-tool {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  align-self: center;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+  border-radius: 5px;
+}
+
+.focuscut-highlighter-pen:hover, .focuscut-pen-tool:hover {
+  transform: scale(1.1);
+  background-color: rgba(0,0,0,0.05);
+}
+
+.focuscut-highlighter-pen:active, .focuscut-pen-tool:active {
+  transform: scale(0.95);
+}
+
+/* 添加活躍狀態樣式 */
+.focuscut-highlighter-pen.active, .focuscut-pen-tool.active {
+  transform: scale(1.05);
+  background-color: rgba(0,0,0,0.1);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.focuscut-highlighter-pen.active::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: #4CAF50;
+  border-radius: 50%;
+  right: 0;
+  top: 0;
+  border: 1px solid white;
+}
+
+.focuscut-pen-tool.active::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: #4CAF50;
+  border-radius: 50%;
+  right: 0;
+  top: 0;
+  border: 1px solid white;
+}
+
+/* 刪除老舊的橡皮擦按鈕樣式 */
+.focuscut-eraser-btn {
+  display: none;
+}
+
+.focuscut-eraser-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Eraser cursor styling */
+.focuscut-eraser-cursor {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='32' height='32'%3E%3Cg transform='rotate(-45 100 100)'%3E%3Crect x='30' y='70' width='140' height='60' rx='15' ry='15' fill='white' stroke='black' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='72' y1='70' x2='72' y2='130' stroke='black' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E") 15 15, auto !important;
 } 

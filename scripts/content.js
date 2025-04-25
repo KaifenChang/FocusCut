@@ -12,7 +12,8 @@ const state = {
   },
   highlighter: {
     isActive: false,
-    color: '#ffff00'  // 預設黃色
+    color: '#ffff00',  // 預設黃色
+    history: []        // 新增: 歷史記錄用於撤銷操作
   }
 };
 
@@ -31,15 +32,20 @@ let isMaskActive = false;
 let topMaskHeight = window.innerHeight * 0.3; // 初始上方遮色片高度，佔螢幕30%
 let bottomMaskHeight = window.innerHeight * 0.3; // 初始下方遮色片高度，佔螢幕30%
 
-function toggleReadingMask() {
+function toggleReadingMask(maskStyle) {
   if (isMaskActive) {
     removeReadingMask();
   } else {
-    createReadingMask();
+    // 使用指定的樣式，如果未指定則使用預設樣式
+    const style = maskStyle || {
+      style: 'white-blur',
+      color: 'rgba(245, 245, 245, 0.4)' // #F5F5F5 with opacity 0.4
+    };
+    createMaskWithStyle(style);
   }
 }
 
-function createReadingMask() {
+function createMaskWithStyle(maskStyle) {
   // 先檢查是否已經存在遮色片，避免重複創建
   if (document.querySelector('.focuscut-reading-mask-top') || 
       document.querySelector('.focuscut-reading-mask-bottom')) {
@@ -47,15 +53,14 @@ function createReadingMask() {
     removeReadingMask();
   }
 
-  console.log('FocusCut: Creating reading mask');
+  console.log('FocusCut: Creating reading mask with style:', maskStyle);
 
   try {
     // 創建上方遮色片
     readingMaskTop = document.createElement('div');
     readingMaskTop.className = 'focuscut-reading-mask-top';
     readingMaskTop.style.height = topMaskHeight + 'px'; // 使用變量
-    readingMaskTop.style.zIndex = '20000'; // 確保足夠高的z-index
-    readingMaskTop.style.backgroundColor = 'rgba(120, 120, 120, 0.4)'; // 灰色半透明
+    readingMaskTop.style.backgroundColor = maskStyle.color; // 使用選定的顏色
     readingMaskTop.style.backdropFilter = 'blur(4px)'; // 模糊背景，更聚焦
     readingMaskTop.style.WebkitBackdropFilter = 'blur(4px)'; // Safari 支持
     
@@ -74,8 +79,7 @@ function createReadingMask() {
     readingMaskBottom = document.createElement('div');
     readingMaskBottom.className = 'focuscut-reading-mask-bottom';
     readingMaskBottom.style.height = bottomMaskHeight + 'px'; // 使用變量
-    readingMaskBottom.style.zIndex = '20000'; // 確保足夠高的z-index
-    readingMaskBottom.style.backgroundColor = 'rgba(120, 120, 120, 0.4)'; // 灰色半透明
+    readingMaskBottom.style.backgroundColor = maskStyle.color; // 使用選定的顏色
     readingMaskBottom.style.backdropFilter = 'blur(4px)'; // 模糊背景，更聚焦
     readingMaskBottom.style.WebkitBackdropFilter = 'blur(4px)'; // Safari 支持
     
@@ -93,11 +97,17 @@ function createReadingMask() {
     // 創建控制按鈕
     readingMaskControls = document.createElement('div');
     readingMaskControls.className = 'focuscut-reading-mask-controls';
-    readingMaskControls.style.zIndex = '20001'; // 確保控制面板在最上層
     
+    // 僅保留關閉按鈕
     const closeButton = document.createElement('button');
-    closeButton.textContent = chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片';
-    closeButton.style.cursor = 'pointer';
+    closeButton.className = 'focuscut-close-button';
+    closeButton.title = chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片';
+    
+    // 創建關閉圖示
+    const closeIcon = document.createElement('span');
+    closeIcon.className = 'focuscut-close-icon';
+    closeButton.appendChild(closeIcon);
+    
     closeButton.addEventListener('click', function(e) {
       e.preventDefault();
       console.log('FocusCut: Closing reading mask');
@@ -218,6 +228,131 @@ async function safeChromeCall(operation) {
   });
 }
 
+// 添加全局樣式
+function addGlobalStyles() {
+  // 檢查是否已經添加了樣式
+  if (document.getElementById('focuscut-global-styles')) {
+    return;
+  }
+  
+  const style = document.createElement('style');
+  style.id = 'focuscut-global-styles';
+  
+  style.textContent = `
+    .focuscut-highlighter-pen, .focuscut-pen-tool {
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+    
+    .focuscut-highlighter-pen:hover, .focuscut-pen-tool:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    .focuscut-highlighter-pen.active, .focuscut-pen-tool.active {
+      background-color: rgba(0, 0, 0, 0.2);
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .focuscut-highlighter {
+      position: absolute;
+      pointer-events: auto;
+      border-radius: 2px;
+      z-index: 9999;
+    }
+    
+    #focuscut-pen-box {
+      transition: opacity 0.3s ease;
+      opacity: 0.85;
+    }
+    
+    #focuscut-pen-box:hover {
+      opacity: 1;
+    }
+    
+    .focuscut-eraser-dragging .focuscut-highlighter:hover {
+      opacity: 0.5;
+      box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+    }
+  `;
+  
+  document.head.appendChild(style);
+  
+  // 添加鍵盤事件監聽器處理撤銷操作
+  setupKeyboardShortcuts();
+}
+
+// 設置鍵盤快捷鍵
+function setupKeyboardShortcuts() {
+  // 追蹤是否已按下 Ctrl+A 或 Command+A
+  let isSelectAllActive = false;
+  
+  document.addEventListener('keydown', function(e) {
+    // 檢測 Ctrl+Z 或 Command+Z
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+      // 在文本輸入框中不攔截撤銷操作
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        return;
+      }
+      
+      // 阻止默認撤銷行為
+      e.preventDefault();
+      
+      // 執行我們的撤銷操作
+      undoHighlighterAction();
+      return;
+    }
+    
+    // 檢測 Ctrl+A 或 Command+A
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+      // 在文本輸入框中不攔截全選操作
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        return;
+      }
+      
+      // 設置已按下全選
+      isSelectAllActive = true;
+      console.log('FocusCut: Ctrl+A/Command+A pressed');
+      
+      // 使用計時器在短時間內重置狀態，以便只在連續操作時有效
+      setTimeout(() => {
+        if (isSelectAllActive) {
+          isSelectAllActive = false;
+          console.log('FocusCut: Ctrl+A/Command+A expired');
+        }
+      }, 800); // 800毫秒的窗口期
+    }
+    
+    // 檢測 Backspace 鍵
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      // 在文本輸入框中不攔截刪除操作
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        return;
+      }
+      
+      // 如果之前按下了 Ctrl+A 或 Command+A
+      if (isSelectAllActive) {
+        // 阻止默認刪除行為
+        e.preventDefault();
+        
+        // 重置狀態
+        isSelectAllActive = false;
+        console.log('FocusCut: Backspace pressed after Ctrl+A/Command+A');
+        
+        // 執行清除所有高亮的操作
+        clearAllHighlights();
+      }
+    }
+  });
+  
+  // 點擊頁面時也重置全選狀態
+  document.addEventListener('click', function() {
+    if (isSelectAllActive) {
+      isSelectAllActive = false;
+      console.log('FocusCut: Ctrl+A/Command+A reset due to click');
+    }
+  });
+}
+
 // 初始化檢查和重試機制
 async function initializeExtension() {
   console.log('FocusCut: Starting initialization...');
@@ -236,6 +371,9 @@ async function initializeExtension() {
       // 在達到最大重試次數後，只使用 localStorage，不顯示錯誤
     }
     
+    // 添加全局樣式
+    addGlobalStyles();
+    
     await setupEventListeners();
     await loadSavedElements();
     state.isInitialized = true;
@@ -252,6 +390,9 @@ async function initializeExtension() {
       resetElements();
     }
   }
+  
+  // 添加筆盒到頁面
+  createHighlighterPenBox();
 }
 
 // 檢查擴展上下文
@@ -284,49 +425,60 @@ async function setupEventListeners() {
 
 // 消息處理
 function handleMessage(request, sender, sendResponse) {
-  console.log('FocusCut: Message received in content script:', request);
-  
-  // 立即發送回應
-  sendResponse({ success: true });
-  
-  if (!state.isInitialized) {
-    console.warn('FocusCut: Not initialized yet, ignoring message');
+  try {
+    // 檢查message的合法性
+    if (!request || typeof request !== 'object') {
+      console.warn('FocusCut: Received invalid message');
     return;
   }
   
-  // 使用 async 立即調用函數來處理異步操作
-  (async () => {
-    try {
-      switch (request.action) {
-        case 'pageUpdated':
-        case 'tabActivated':
-          await handleUrlChange(request.url);
-          break;
+    console.log('FocusCut: Content script received message:', request.action);
+    
+    // 處理各種指令
+    switch(request.action) {
         case 'addDivider':
-          await addDivider(request.color);
+        addDivider(request.color);
           break;
+      
         case 'addBlock':
-          await addBlock(request.color);
+        addBlock(request.color);
           break;
+      
         case 'addNote':
-          await addNote(request.color);
+        addNote(request.color);
           break;
-        case 'toggleReadingMask':
-          console.log('FocusCut: Toggling reading mask with style:', request.maskStyle);
-          toggleReadingMask(request.maskStyle);
+      
+      case 'clearAll':
+        clearAllElements();
           break;
+      
+      case 'rescan':
+        initializeExtension();
+        break;
+      
         case 'enableHighlighter':
-          console.log('FocusCut: Enabling highlighter with color:', request.color);
           enableHighlighter(request.color);
           break;
+      
+      case 'toggleReadingMask':
+        if (!isMaskActive) {
+          // 創建遮色片時應用選定樣式
+          createMaskWithStyle(request.maskStyle);
+        } else {
+          removeReadingMask();
+        }
+        break;
+    }
+    
+    if (sendResponse) {
+      sendResponse({ status: 'success' });
       }
     } catch (error) {
       console.error('FocusCut: Error handling message:', error);
+    if (sendResponse) {
+      sendResponse({ status: 'error', message: error.message });
     }
-  })();
-  
-  // 返回 true 表示將異步處理響應
-  return true;
+  }
 }
 
 // 存儲操作
@@ -1087,7 +1239,7 @@ function toggleHighlighter(color) {
 
 // 開啟螢光筆模式
 function enableHighlighter(color) {
-  if (state.highlighter.isActive) return;
+  if (state.highlighter.isActive && state.highlighter.color === color) return;
   
   console.log('FocusCut: Enabling highlighter with color:', color);
   
@@ -1095,17 +1247,43 @@ function enableHighlighter(color) {
   state.highlighter.color = color || state.highlighter.color;
   state.highlighter.isActive = true;
   
+  // 移除現有的螢光筆游標樣式
+  document.body.classList.remove('focuscut-highlight-cursor');
+  
+  // 移除所有自定義螢光筆游標
+  const oldStyle = document.getElementById('focuscut-cursor-style');
+  if (oldStyle) {
+    oldStyle.remove();
+  }
+  
+  // 創建帶有特定顏色的游標樣式
+  const cursorStyle = document.createElement('style');
+  cursorStyle.id = 'focuscut-cursor-style';
+  
+  // 創建帶有正確顏色的游標 SVG
+  const encodedColor = encodeURIComponent(color);
+  const cursorSvg = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M22,2L10,14L8,24L18,22L30,10L22,2z" stroke="black" stroke-width="2" fill="${encodedColor}"/></svg>') 3 29, auto !important`;
+  
+  cursorStyle.textContent = `
+    .focuscut-highlight-cursor {
+      cursor: ${cursorSvg};
+    }
+    .focuscut-highlight-selecting {
+      cursor: ${cursorSvg};
+      user-select: text !important;
+    }
+  `;
+  
+  document.head.appendChild(cursorStyle);
+  
   // 添加螢光筆游標樣式
   document.body.classList.add('focuscut-highlight-cursor');
   
   // 鼠標按下時開始選擇文字
   document.addEventListener('mousedown', startTextSelection);
   
-  // 添加鍵盤事件監聽器，按ESC鍵退出螢光筆模式
-  document.addEventListener('keydown', handleHighlighterKeyDown);
-  
-  // 創建並顯示提示
-  showHighlighterTooltip();
+  // 更新筆盒 UI，標記當前選中的筆
+  updatePenBoxActiveState(color);
 }
 
 // 關閉螢光筆模式
@@ -1118,20 +1296,30 @@ function disableHighlighter() {
   
   // 移除螢光筆游標樣式
   document.body.classList.remove('focuscut-highlight-cursor');
+  document.body.classList.remove('focuscut-highlight-selecting');
+  document.body.classList.remove('focuscut-eraser-cursor');
+  document.body.classList.remove('focuscut-eraser-dragging');
+  
+  // 移除自定義螢光筆游標樣式元素
+  const cursorStyle = document.getElementById('focuscut-cursor-style');
+  if (cursorStyle) {
+    cursorStyle.remove();
+  }
   
   // 移除事件監聽器
   document.removeEventListener('mousedown', startTextSelection);
-  document.removeEventListener('keydown', handleHighlighterKeyDown);
+  document.removeEventListener('mousedown', startDocumentEraserDrag);
+  document.removeEventListener('mousemove', eraserDragHandler);
+  document.removeEventListener('mouseup', stopEraserDrag);
   
-  // 移除提示
-  removeHighlighterTooltip();
-}
-
-// 按ESC退出螢光筆模式
-function handleHighlighterKeyDown(e) {
-  if (e.key === 'Escape') {
-    disableHighlighter();
+  // 確保移除提示
+  const tooltip = document.getElementById('focuscut-highlighter-tooltip');
+  if (tooltip) {
+    tooltip.remove();
   }
+  
+  // 預設顯示游標為活躍狀態
+  updatePenBoxActiveState(null, 'cursor');
 }
 
 // 創建螢光筆提示
@@ -1145,11 +1333,11 @@ function showHighlighterTooltip() {
   tooltip.style.color = 'white';
   tooltip.style.padding = '8px 12px';
   tooltip.style.borderRadius = '4px';
-  tooltip.style.zIndex = '2147483646'; // 高於其他元素但低於遮色片
+  tooltip.style.zIndex = '2147483647'; // 修改Z-index，確保在遮色片上方顯示
   tooltip.style.fontSize = '14px';
   tooltip.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
   tooltip.style.transition = 'opacity 0.3s';
-  tooltip.textContent = chrome.i18n.getMessage('highlighterTooltip') || '螢光筆模式已啟動 - 選擇文字進行標記 (ESC退出)';
+  tooltip.textContent = chrome.i18n.getMessage('highlighterTooltip') || '螢光筆模式已啟動 - 選擇文字進行標記 (點擊筆盒中的游標圖示退出)';
   
   document.body.appendChild(tooltip);
   
@@ -1220,6 +1408,7 @@ function getSelectionRanges(selection) {
 // 創建高亮元素
 function createHighlights(ranges, color) {
   const highlights = [];
+  const highlightElements = []; // 儲存新創建的DOM元素
   
   // 處理每個選擇範圍
   ranges.forEach(range => {
@@ -1261,9 +1450,25 @@ function createHighlights(ranges, color) {
       };
       
       highlights.push(highlightData);
+      highlightElements.push(highlight); // 儲存DOM元素引用
       state.elements.highlights.push(highlightData);
     }
   });
+  
+  // 記錄本次操作到歷史
+  if (highlights.length > 0) {
+    const operation = {
+      type: 'add',
+      data: highlights,
+      elements: highlightElements
+    };
+    state.highlighter.history.push(operation);
+    
+    // 限制歷史記錄長度，避免佔用過多記憶體
+    if (state.highlighter.history.length > 50) {
+      state.highlighter.history.shift();
+    }
+  }
   
   // 保存高亮到本地存儲
   saveElements();
@@ -1292,5 +1497,623 @@ function restoreHighlights(highlightData) {
     
     // 添加到頁面
     document.body.appendChild(highlight);
+    
+    // 如果當前在橡皮擦模式，添加擦除功能
+    if (document.body.classList.contains('focuscut-eraser-cursor')) {
+      highlight.addEventListener('click', eraseHighlight);
+      highlight.addEventListener('mousedown', startEraserDrag);
+      highlight.addEventListener('mouseenter', eraseIfDragging);
+    }
   });
+}
+
+// 原來的 createReadingMask 函數現在作為一個兼容性包裝器，總是使用預設設定
+function createReadingMask() {
+  const defaultStyle = {
+    style: 'white-blur',
+    color: 'rgba(245, 245, 245, 0.4)' // #F5F5F5 with opacity 0.4
+  };
+  createMaskWithStyle(defaultStyle);
+}
+
+// 創建並顯示螢光筆筆盒
+function createHighlighterPenBox() {
+  // 檢查是否已存在筆盒
+  const existingPenBox = document.getElementById('focuscut-pen-box');
+  if (existingPenBox) {
+    return existingPenBox;
+  }
+  
+  // 預設螢光筆顏色
+  const highlighterColors = [
+    '#ffff00', // 黃色
+    '#ffbd69', // 橙色
+    '#82ccff'  // 藍色
+  ];
+  
+  // 創建筆盒容器
+  const penBox = document.createElement('div');
+  penBox.id = 'focuscut-pen-box';
+  penBox.style.position = 'fixed';
+  penBox.style.left = '20px';
+  penBox.style.bottom = '20px';
+  penBox.style.backgroundColor = '#f0f0f0';
+  penBox.style.borderRadius = '15px';
+  penBox.style.boxShadow = '0 3px 10px rgba(0,0,0,0.2)';
+  penBox.style.padding = '12px 10px';
+  penBox.style.display = 'flex';
+  penBox.style.flexDirection = 'column';
+  penBox.style.gap = '8px';
+  penBox.style.zIndex = '2147483647'; // 增加z-index值，確保在遮色片上方顯示
+  penBox.style.border = '1px solid #ddd';
+  penBox.style.width = '60px';
+  
+  // 添加一個游標按鈕 (退出螢光筆模式) - 移到第一位
+  const cursorBtn = document.createElement('div');
+  cursorBtn.className = 'focuscut-pen-tool';
+  cursorBtn.id = 'focuscut-cursor-btn';
+  cursorBtn.style.width = '28px';
+  cursorBtn.style.height = '28px';
+  cursorBtn.style.cursor = 'pointer';
+  cursorBtn.style.display = 'flex';
+  cursorBtn.style.alignItems = 'center';
+  cursorBtn.style.justifyContent = 'center';
+  cursorBtn.style.position = 'relative';
+  cursorBtn.style.alignSelf = 'center';
+  
+  // 創建游標圖標
+  const cursorIcon = document.createElement('div');
+  cursorIcon.className = 'focuscut-cursor-icon';
+  cursorIcon.style.width = '20px';
+  cursorIcon.style.height = '20px';
+  cursorIcon.style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32"><path d="M7,4l0,22l4,-4l4,8l4,-2l-4,-8l6,0z" stroke="black" stroke-width="2" fill="white"/></svg>')`;
+  cursorIcon.style.backgroundSize = 'contain';
+  cursorIcon.style.backgroundRepeat = 'no-repeat';
+  cursorIcon.style.backgroundPosition = 'center';
+  
+  // 當點擊游標按鈕時退出螢光筆模式
+  cursorBtn.addEventListener('click', () => {
+    // 停用高亮模式
+    disableHighlighter();
+    
+    // 停用橡皮擦模式
+    disableEraserMode();
+    
+    // 更新筆盒 UI 狀態
+    updatePenBoxActiveState(null, 'cursor');
+  });
+  
+  // 組裝游標按鈕
+  cursorBtn.appendChild(cursorIcon);
+  
+  // 將游標按鈕添加到筆盒 (第一位)
+  penBox.appendChild(cursorBtn);
+  
+  // 創建三支螢光筆
+  highlighterColors.forEach(color => {
+    const highlighterPen = document.createElement('div');
+    highlighterPen.className = 'focuscut-highlighter-pen';
+    highlighterPen.dataset.color = color; // 儲存顏色到 data-color 屬性
+    highlighterPen.style.width = '28px';
+    highlighterPen.style.height = '28px';
+    highlighterPen.style.cursor = 'pointer';
+    highlighterPen.style.display = 'flex';
+    highlighterPen.style.alignItems = 'center';
+    highlighterPen.style.justifyContent = 'center';
+    highlighterPen.style.position = 'relative';
+    highlighterPen.style.alignSelf = 'center';
+    
+    // 創建簡約風格的螢光筆圖標 (與游標相同)
+    const penIcon = document.createElement('div');
+    penIcon.className = 'focuscut-pen-icon';
+    penIcon.style.width = '20px';
+    penIcon.style.height = '20px';
+    penIcon.style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32"><path d="M22,2L10,14L8,24L18,22L30,10L22,2z" stroke="black" stroke-width="2" fill="${encodeURIComponent(color)}"/></svg>')`;
+    penIcon.style.backgroundSize = 'contain';
+    penIcon.style.backgroundRepeat = 'no-repeat';
+    penIcon.style.backgroundPosition = 'center';
+    
+    // 添加點擊事件 - 不管是否已啟用，都切換到這支筆
+    highlighterPen.addEventListener('click', () => {
+      if (state.highlighter.isActive && state.highlighter.color === color) {
+        // 如果已經是此顏色，不需要做任何事
+        return;
+      }
+      
+      // 停用橡皮擦模式
+      disableEraserMode();
+      
+      // 先禁用現有螢光筆，再啟用新顏色
+      if (state.highlighter.isActive) {
+        // 完全重新啟用以更新游標顏色
+        enableHighlighter(color);
+      } else {
+        // 完全新啟用
+        enableHighlighter(color);
+      }
+    });
+    
+    // 組裝螢光筆
+    highlighterPen.appendChild(penIcon);
+    penBox.appendChild(highlighterPen);
+  });
+  
+  // 添加一個橡皮擦按鈕 (簡約風格)
+  const eraserBtn = document.createElement('div');
+  eraserBtn.className = 'focuscut-pen-tool';
+  eraserBtn.id = 'focuscut-eraser-btn';
+  eraserBtn.style.width = '28px';
+  eraserBtn.style.height = '28px';
+  eraserBtn.style.cursor = 'pointer';
+  eraserBtn.style.display = 'flex';
+  eraserBtn.style.alignItems = 'center';
+  eraserBtn.style.justifyContent = 'center';
+  eraserBtn.style.position = 'relative';
+  eraserBtn.style.alignSelf = 'center';
+  
+  // 創建簡約風格的橡皮擦圖標
+  const eraserIcon = document.createElement('div');
+  eraserIcon.className = 'focuscut-eraser-icon';
+  eraserIcon.style.width = '20px';
+  eraserIcon.style.height = '20px';
+  eraserIcon.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='200' height='200'%3E%3Cg transform='rotate(-45 100 100)'%3E%3Crect x='30' y='70' width='140' height='60' rx='15' ry='15' fill='white' stroke='black' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='72' y1='70' x2='72' y2='130' stroke='black' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E")`;
+  eraserIcon.style.backgroundSize = 'contain';
+  eraserIcon.style.backgroundRepeat = 'no-repeat';
+  eraserIcon.style.backgroundPosition = 'center';
+  
+  // 當點擊橡皮擦按鈕時切換到橡皮擦模式
+  eraserBtn.addEventListener('click', () => {
+    // 停用高亮模式
+    if (state.highlighter.isActive) {
+      disableHighlighter();
+    }
+    
+    // 啟用橡皮擦模式
+    enableEraserMode();
+    
+    // 更新筆盒 UI 狀態
+    updatePenBoxActiveState(null, 'eraser');
+  });
+  
+  // 組裝橡皮擦按鈕
+  eraserBtn.appendChild(eraserIcon);
+  
+  // 將橡皮擦添加到筆盒
+  penBox.appendChild(eraserBtn);
+  
+  // 添加筆盒到頁面
+  document.body.appendChild(penBox);
+  
+  // 預設顯示游標為活躍狀態
+  cursorBtn.classList.add('active');
+  
+  return penBox;
+}
+
+// 停用橡皮擦模式
+function disableEraserMode() {
+  // 移除橡皮擦游標樣式
+  document.body.classList.remove('focuscut-eraser-cursor');
+  document.body.classList.remove('focuscut-eraser-dragging');
+  
+  // 移除事件監聽器
+  document.removeEventListener('mousedown', startDocumentEraserDrag);
+  document.removeEventListener('mousemove', eraserDragHandler);
+  document.removeEventListener('mouseup', stopEraserDrag);
+  
+  // 移除高亮元素上的擦除事件
+  const highlights = document.querySelectorAll('.focuscut-highlighter');
+  highlights.forEach(highlight => {
+    highlight.removeEventListener('click', eraseHighlight);
+    highlight.removeEventListener('mousedown', startEraserDrag);
+    highlight.removeEventListener('mouseenter', eraseIfDragging);
+  });
+  
+  // 移除自定義游標樣式元素
+  const cursorStyle = document.getElementById('focuscut-cursor-style');
+  if (cursorStyle) {
+    cursorStyle.remove();
+  }
+}
+
+// 開啟橡皮擦模式
+function enableEraserMode() {
+  console.log('FocusCut: Enabling eraser mode');
+  
+  // 禁用螢光筆模式
+  if (state.highlighter.isActive) {
+    // 移除螢光筆游標樣式
+    document.body.classList.remove('focuscut-highlight-cursor');
+    document.body.classList.remove('focuscut-highlight-selecting');
+    
+    // 移除事件監聽器
+    document.removeEventListener('mousedown', startTextSelection);
+  }
+  
+  state.highlighter.isActive = false;
+  
+  // 移除任何現有的自定義游標樣式
+  const oldStyle = document.getElementById('focuscut-cursor-style');
+  if (oldStyle) {
+    oldStyle.remove();
+  }
+  
+  // 創建橡皮擦游標樣式
+  const cursorStyle = document.createElement('style');
+  cursorStyle.id = 'focuscut-cursor-style';
+  
+  // 創建橡皮擦游標SVG - 使用URL編碼處理SVG以確保在CSS游標屬性中正確顯示
+  const eraserCursor = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='32' height='32'%3E%3Cg transform='rotate(-45 100 100)'%3E%3Crect x='30' y='70' width='140' height='60' rx='15' ry='15' fill='white' stroke='black' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='72' y1='70' x2='72' y2='130' stroke='black' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E") 15 15, auto !important`;
+  
+  cursorStyle.textContent = `
+    .focuscut-eraser-cursor, .focuscut-highlighter {
+      cursor: ${eraserCursor};
+    }
+    
+    .focuscut-eraser-dragging, .focuscut-eraser-dragging * {
+      cursor: ${eraserCursor} !important;
+      user-select: none !important;
+    }
+  `;
+  
+  document.head.appendChild(cursorStyle);
+  
+  // 添加橡皮擦游標樣式到body
+  document.body.classList.add('focuscut-eraser-cursor');
+  
+  // 移除之前可能存在的mousemove事件監聽器
+  document.removeEventListener('mousemove', eraserDragHandler);
+  document.removeEventListener('mouseup', stopEraserDrag);
+  
+  // 添加點擊事件到所有高亮元素，同時支持拖曳擦除
+  setupHighlighterErasing();
+  
+  // 添加文檔級別的mousedown監聽，讓用戶可以從任意位置開始拖曳擦除
+  document.addEventListener('mousedown', startDocumentEraserDrag);
+  
+  // 確保移除任何提示
+  const tooltip = document.getElementById('focuscut-highlighter-tooltip');
+  if (tooltip) {
+    tooltip.remove();
+  }
+}
+
+// 設置高亮元素的擦除功能
+function setupHighlighterErasing() {
+  const highlights = document.querySelectorAll('.focuscut-highlighter');
+  
+  // 為每個高亮元素添加點擊擦除功能
+  highlights.forEach(highlight => {
+    // 移除可能已存在的監聽器以避免重複
+    highlight.removeEventListener('click', eraseHighlight);
+    highlight.removeEventListener('mousedown', startEraserDrag);
+    highlight.removeEventListener('mouseenter', eraseIfDragging);
+    
+    // 添加點擊和拖曳監聽器
+    highlight.addEventListener('click', eraseHighlight);
+    highlight.addEventListener('mousedown', startEraserDrag);
+    highlight.addEventListener('mouseenter', eraseIfDragging);
+  });
+  
+  // 添加全局拖曳停止監聽器
+  document.addEventListener('mouseup', stopEraserDrag);
+}
+
+// 拖曳擦除開始
+function startEraserDrag(e) {
+  // 如果不在橡皮擦模式則不處理
+  if (!document.body.classList.contains('focuscut-eraser-cursor')) return;
+  
+  // 防止觸發額外的點擊事件
+  e.preventDefault();
+  
+  // 標記為正在拖曳擦除
+  document.body.classList.add('focuscut-eraser-dragging');
+  
+  // 立即擦除當前元素
+  eraseHighlight(e);
+  
+  // 添加鼠標移動監聽器
+  document.addEventListener('mousemove', eraserDragHandler);
+}
+
+// 拖曳擦除移動處理器
+function eraserDragHandler(e) {
+  // 檢查鼠標下方的元素
+  const elementsUnderCursor = document.elementsFromPoint(e.clientX, e.clientY);
+  
+  // 檢查是否有高亮元素
+  const highlightUnderCursor = elementsUnderCursor.find(el => 
+    el.classList.contains('focuscut-highlighter')
+  );
+  
+  // 如果有高亮元素，擦除它
+  if (highlightUnderCursor) {
+    const eraseEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+    
+    highlightUnderCursor.dispatchEvent(eraseEvent);
+  }
+}
+
+// 如果正在拖曳，則擦除進入的元素
+function eraseIfDragging(e) {
+  if (document.body.classList.contains('focuscut-eraser-dragging')) {
+    eraseHighlight(e);
+  }
+}
+
+// 拖曳擦除停止
+function stopEraserDrag() {
+  // 移除拖曳狀態
+  document.body.classList.remove('focuscut-eraser-dragging');
+  
+  // 移除鼠標移動監聽器
+  document.removeEventListener('mousemove', eraserDragHandler);
+}
+
+// 擦除高亮元素
+function eraseHighlight(e) {
+  const highlight = e.currentTarget;
+  
+  // 找到對應的數據
+  const rect = highlight.getBoundingClientRect();
+  const position = {
+    x: parseFloat(highlight.style.left),
+    y: parseFloat(highlight.style.top)
+  };
+  
+  const size = {
+    width: parseFloat(highlight.style.width),
+    height: parseFloat(highlight.style.height)
+  };
+  
+  // 找到要刪除的高亮數據
+  const removedHighlights = state.elements.highlights.filter(h => {
+    return (Math.abs(h.position.x - position.x) < 1 && 
+            Math.abs(h.position.y - position.y) < 1 &&
+            Math.abs(h.size.width - size.width) < 1 &&
+            Math.abs(h.size.height - size.height) < 1);
+  });
+  
+  // 記錄刪除操作到歷史
+  if (removedHighlights.length > 0) {
+    const operation = {
+      type: 'remove',
+      data: removedHighlights,
+      elements: [highlight] // 儲存被刪除的DOM元素
+    };
+    state.highlighter.history.push(operation);
+    
+    // 限制歷史記錄長度
+    if (state.highlighter.history.length > 50) {
+      state.highlighter.history.shift();
+    }
+  }
+  
+  // 從DOM中移除元素
+  highlight.remove();
+  
+  // 從狀態數組中過濾掉此高亮
+  state.elements.highlights = state.elements.highlights.filter(h => {
+    return !(Math.abs(h.position.x - position.x) < 1 && 
+             Math.abs(h.position.y - position.y) < 1 &&
+             Math.abs(h.size.width - size.width) < 1 &&
+             Math.abs(h.size.height - size.height) < 1);
+  });
+  
+  // 保存更改
+  saveElements();
+}
+
+// 更新筆盒中的按鈕活躍狀態
+function updatePenBoxActiveState(color = null, tool = null) {
+  const penBox = document.getElementById('focuscut-pen-box');
+  if (!penBox) return;
+  
+  // 清除所有活躍狀態
+  const allItems = penBox.querySelectorAll('.focuscut-highlighter-pen, .focuscut-pen-tool');
+  allItems.forEach(item => {
+    item.classList.remove('active');
+  });
+  
+  // 設置新的活躍狀態
+  if (color) {
+    // 設置選中的螢光筆
+    const activePen = penBox.querySelector(`.focuscut-highlighter-pen[data-color="${color}"]`);
+    if (activePen) {
+      activePen.classList.add('active');
+    }
+  } else if (tool === 'eraser') {
+    // 設置選中的橡皮擦
+    const eraserBtn = document.getElementById('focuscut-eraser-btn');
+    if (eraserBtn) {
+      eraserBtn.classList.add('active');
+    }
+  } else if (tool === 'cursor') {
+    // 設置選中的游標
+    const cursorBtn = document.getElementById('focuscut-cursor-btn');
+    if (cursorBtn) {
+      cursorBtn.classList.add('active');
+    }
+  }
+}
+
+// 從文檔任意位置開始拖曳擦除
+function startDocumentEraserDrag(e) {
+  // 如果不在橡皮擦模式則不處理
+  if (!document.body.classList.contains('focuscut-eraser-cursor')) return;
+  
+  // 避免在控制元素上啟動
+  if (e.target.closest('#focuscut-pen-box, .focuscut-block, .focuscut-divider, .focuscut-sticky-note, .focuscut-reading-mask-controls')) {
+    return;
+  }
+  
+  // 如果已經點擊在高亮元素上，則不需要在這裡處理，讓專門的處理器處理
+  if (e.target.classList.contains('focuscut-highlighter')) {
+    return;
+  }
+  
+  // 防止觸發可能的文本選擇
+  e.preventDefault();
+  
+  // 標記為正在拖曳擦除
+  document.body.classList.add('focuscut-eraser-dragging');
+  
+  // 添加鼠標移動監聽器
+  document.addEventListener('mousemove', eraserDragHandler);
+  document.addEventListener('mouseup', stopEraserDrag);
 } 
+
+// 撤銷螢光筆操作
+function undoHighlighterAction() {
+  // 如果沒有歷史記錄，直接返回
+  if (state.highlighter.history.length === 0) {
+    console.log('FocusCut: No highlighter history to undo');
+    return;
+  }
+  
+  // 獲取最後一個操作
+  const lastOperation = state.highlighter.history.pop();
+  
+  if (lastOperation.type === 'add') {
+    // 撤銷添加操作 - 刪除添加的高亮
+    lastOperation.elements.forEach(element => {
+      if (element && element.parentNode) {
+        element.remove();
+      }
+    });
+    
+    // 從狀態中移除相應的數據
+    lastOperation.data.forEach(highlightData => {
+      const index = state.elements.highlights.findIndex(h => 
+        Math.abs(h.position.x - highlightData.position.x) < 1 && 
+        Math.abs(h.position.y - highlightData.position.y) < 1 &&
+        Math.abs(h.size.width - highlightData.size.width) < 1 &&
+        Math.abs(h.size.height - highlightData.size.height) < 1
+      );
+      
+      if (index !== -1) {
+        state.elements.highlights.splice(index, 1);
+      }
+    });
+    
+    console.log('FocusCut: Undid add operation, removed', lastOperation.elements.length, 'highlights');
+  } else if (lastOperation.type === 'remove') {
+    // 撤銷刪除操作 - 重新創建被刪除的高亮
+    lastOperation.data.forEach(highlightData => {
+      // 創建高亮元素
+      const highlight = document.createElement('div');
+      highlight.className = 'focuscut-highlighter';
+      
+      // 設置高亮元素的位置和大小
+      highlight.style.left = highlightData.position.x + 'px';
+      highlight.style.top = highlightData.position.y + 'px';
+      highlight.style.width = highlightData.size.width + 'px';
+      highlight.style.height = highlightData.size.height + 'px';
+      
+      // 設置高亮顏色
+      const rgba = convertToRGBA(highlightData.color, 0.5);
+      highlight.style.backgroundColor = rgba;
+      
+      // 添加到頁面
+      document.body.appendChild(highlight);
+      
+      // 如果當前在橡皮擦模式，添加擦除功能
+      if (document.body.classList.contains('focuscut-eraser-cursor')) {
+        highlight.addEventListener('click', eraseHighlight);
+        highlight.addEventListener('mousedown', startEraserDrag);
+        highlight.addEventListener('mouseenter', eraseIfDragging);
+      }
+      
+      // 添加回狀態中
+      state.elements.highlights.push(highlightData);
+    });
+    
+    console.log('FocusCut: Undid remove operation, restored', lastOperation.data.length, 'highlights');
+  } else if (lastOperation.type === 'remove-all') {
+    // 撤銷全部刪除操作 - 重新創建所有被刪除的高亮
+    lastOperation.data.forEach(highlightData => {
+      // 創建高亮元素
+      const highlight = document.createElement('div');
+      highlight.className = 'focuscut-highlighter';
+      
+      // 設置高亮元素的位置和大小
+      highlight.style.left = highlightData.position.x + 'px';
+      highlight.style.top = highlightData.position.y + 'px';
+      highlight.style.width = highlightData.size.width + 'px';
+      highlight.style.height = highlightData.size.height + 'px';
+      
+      // 設置高亮顏色
+      const rgba = convertToRGBA(highlightData.color, 0.5);
+      highlight.style.backgroundColor = rgba;
+      
+      // 添加到頁面
+      document.body.appendChild(highlight);
+      
+      // 如果當前在橡皮擦模式，添加擦除功能
+      if (document.body.classList.contains('focuscut-eraser-cursor')) {
+        highlight.addEventListener('click', eraseHighlight);
+        highlight.addEventListener('mousedown', startEraserDrag);
+        highlight.addEventListener('mouseenter', eraseIfDragging);
+      }
+      
+      // 添加回狀態中
+      state.elements.highlights.push(highlightData);
+    });
+    
+    console.log('FocusCut: Undid remove-all operation, restored', lastOperation.data.length, 'highlights');
+  }
+  
+  // 保存更改
+  saveElements();
+}
+
+// 清除所有高亮，並記錄到歷史
+function clearAllHighlights() {
+  console.log('FocusCut: Clearing all highlights');
+  
+  // 獲取所有高亮元素
+  const highlights = document.querySelectorAll('.focuscut-highlighter');
+  
+  // 如果沒有高亮元素，直接返回
+  if (highlights.length === 0) {
+    console.log('FocusCut: No highlights to clear');
+    return;
+  }
+  
+  // 收集所有高亮元素和數據以記錄到歷史
+  const highlightElements = Array.from(highlights);
+  const removedHighlights = [...state.elements.highlights];
+  
+  // 記錄批量刪除操作到歷史
+  if (removedHighlights.length > 0) {
+    const operation = {
+      type: 'remove-all',
+      data: removedHighlights,
+      elements: highlightElements
+    };
+    state.highlighter.history.push(operation);
+    
+    // 限制歷史記錄長度
+    if (state.highlighter.history.length > 50) {
+      state.highlighter.history.shift();
+    }
+  }
+  
+  // 從DOM中移除所有高亮元素
+  highlightElements.forEach(highlight => {
+    highlight.remove();
+  });
+  
+  // 清空狀態中的高亮數組
+  state.elements.highlights = [];
+  
+  // 保存更改
+  saveElements();
+  
+  console.log('FocusCut: Cleared', highlightElements.length, 'highlights');
+}

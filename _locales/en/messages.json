@@ -180,7 +180,7 @@
     "description": "Button to enable highlighter"
   },
   "highlighterTooltip": {
-    "message": "Highlighter mode active - Select text to highlight (Press ESC to exit)",
+    "message": "Highlighter mode active - Select text to highlight (Click the cursor icon to exit)",
     "description": "Tooltip shown when highlighter is active"
   },
   "highlighterCustomColor": {
