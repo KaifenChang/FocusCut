@@ -194,15 +194,95 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // 發送消息給內容腳本，包含選中的樣式信息
-      await chrome.tabs.sendMessage(tab.id, { 
+      chrome.tabs.sendMessage(tab.id, { 
         action: 'toggleReadingMask',
         maskStyle: selectedMaskStyle
+      }, (response) => {
+        // 檢查是否有回應，如果有才關閉窗口
+        if (!chrome.runtime.lastError) {
+          // 關閉彈出窗口，讓用戶可以看到遮色片效果
+          window.close();
+        } else {
+          // 顯示錯誤訊息
+          console.error('Error toggling reading mask:', chrome.runtime.lastError.message);
+          
+          // 在彈出窗口中顯示錯誤訊息
+          const errorMessage = document.createElement('div');
+          errorMessage.className = 'error-message';
+          errorMessage.style.color = 'red';
+          errorMessage.style.padding = '10px';
+          errorMessage.style.marginTop = '10px';
+          errorMessage.textContent = '無法啟用遮色片，請重新整理頁面後再試。';
+          
+          // 添加到彈出窗口中
+          document.body.appendChild(errorMessage);
+          
+          // 3秒後移除錯誤訊息
+          setTimeout(() => {
+            if (errorMessage && errorMessage.parentNode) {
+              errorMessage.parentNode.removeChild(errorMessage);
+            }
+          }, 3000);
+        }
       });
-      
-      // 關閉彈出窗口，讓用戶可以看到遮色片效果
-      window.close();
     } catch (error) {
       console.error('Error toggling reading mask:', error);
     }
   });
+  
+  // 螢光筆切換按鈕事件
+  const toggleHighlighterButton = document.getElementById('toggle-highlighter');
+  if (toggleHighlighterButton) {
+    toggleHighlighterButton.addEventListener('click', async () => {
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        // 檢查標籤頁是否存在
+        if (!tab || !tab.id) {
+          console.error('No active tab found');
+          return;
+        }
+        
+        // 發送消息給內容腳本，來切換螢光筆盒
+        await chrome.tabs.sendMessage(tab.id, { 
+          action: 'toggleHighlighterBox',
+          color: '#ffff00' // 預設黃色
+        }, (response) => {
+          // 根據回應更新按鈕文字 (現在會執行，因為不再關閉彈出窗口)
+          if (response && response.isVisible !== undefined) {
+            toggleHighlighterButton.textContent = response.isVisible ? '關閉螢光筆盒' : '開啟螢光筆盒';
+          }
+        });
+        
+        // 不再關閉彈出窗口，讓用戶可以繼續使用目錄
+        // window.close();
+      } catch (error) {
+        console.error('Error toggling highlighter:', error);
+      }
+    });
+    
+    // 檢查螢光筆盒的當前狀態並更新按鈕文字
+    try {
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs && tabs.length > 0 && tabs[0].id) {
+          chrome.tabs.sendMessage(
+            tabs[0].id,
+            { action: 'checkHighlighterBoxStatus' },
+            (response) => {
+              if (chrome.runtime.lastError) {
+                console.log('Ignore this error:', chrome.runtime.lastError.message);
+                return;
+              }
+              
+              if (response && response.isVisible !== undefined) {
+                toggleHighlighterButton.textContent = response.isVisible ? '關閉螢光筆盒' : '開啟螢光筆盒';
+              }
+            }
+          );
+        }
+      });
+    } catch (e) {
+      console.log('Error checking highlighter status:', e);
+    }
+  }
 }); 

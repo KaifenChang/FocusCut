@@ -429,56 +429,98 @@ function handleMessage(request, sender, sendResponse) {
     // 檢查message的合法性
     if (!request || typeof request !== 'object') {
       console.warn('FocusCut: Received invalid message');
-    return;
-  }
+      if (sendResponse) {
+        sendResponse({ status: 'error', message: 'Invalid message format' });
+      }
+      return;
+    }
   
     console.log('FocusCut: Content script received message:', request.action);
     
     // 處理各種指令
     switch(request.action) {
         case 'addDivider':
-        addDivider(request.color);
+          addDivider(request.color);
           break;
       
         case 'addBlock':
-        addBlock(request.color);
+          addBlock(request.color);
           break;
       
         case 'addNote':
-        addNote(request.color);
+          addNote(request.color);
           break;
       
-      case 'clearAll':
-        clearAllElements();
+        case 'clearAll':
+          clearAllElements();
           break;
       
-      case 'rescan':
-        initializeExtension();
-        break;
+        case 'rescan':
+          initializeExtension();
+          break;
       
         case 'enableHighlighter':
           enableHighlighter(request.color);
           break;
       
-      case 'toggleReadingMask':
-        if (!isMaskActive) {
-          // 創建遮色片時應用選定樣式
-          createMaskWithStyle(request.maskStyle);
-        } else {
-          removeReadingMask();
-        }
-        break;
+        case 'ping':
+          // 簡單的檢查內容腳本是否可用的ping訊息
+          if (sendResponse) {
+            sendResponse({ status: 'success', message: 'Content script is ready' });
+          }
+          return true; // 保持消息通道開啟
+      
+        case 'toggleReadingMask':
+          try {
+            if (!isMaskActive) {
+              // 創建遮色片時應用選定樣式
+              createMaskWithStyle(request.maskStyle);
+            } else {
+              removeReadingMask();
+            }
+            if (sendResponse) {
+              sendResponse({ 
+                status: 'success', 
+                isActive: isMaskActive 
+              });
+            }
+          } catch (maskError) {
+            console.error('FocusCut: Error in toggleReadingMask:', maskError);
+            if (sendResponse) {
+              sendResponse({ 
+                status: 'error', 
+                message: maskError.message || 'Failed to toggle reading mask' 
+              });
+            }
+          }
+          return true; // 保持消息通道開啟
+        
+        case 'toggleHighlighterBox':
+          const isVisible = toggleHighlighterBox(request.color);
+          if (sendResponse) {
+            sendResponse({ isVisible });
+          }
+          return true; // 保持消息通道開啟
+        
+        case 'checkHighlighterBoxStatus':
+          const penBox = document.getElementById('focuscut-pen-box');
+          const penBoxVisible = penBox && penBox.style.display !== 'none';
+          if (sendResponse) {
+            sendResponse({ isVisible: penBoxVisible });
+          }
+          return true; // 保持消息通道開啟
     }
     
     if (sendResponse) {
       sendResponse({ status: 'success' });
-      }
-    } catch (error) {
-      console.error('FocusCut: Error handling message:', error);
+    }
+  } catch (error) {
+    console.error('FocusCut: Error handling message:', error);
     if (sendResponse) {
       sendResponse({ status: 'error', message: error.message });
     }
   }
+  return true; // 始終保持通道開啟
 }
 
 // 存儲操作
@@ -983,7 +1025,8 @@ function createNote(noteData) {
   return new Promise((resolve) => {
     const note = document.createElement('div');
     note.className = 'focuscut-sticky-note';
-    note.style.position = 'absolute';
+    // 設置初始樣式和位置，根據fixed屬性決定position類型
+    note.style.position = noteData.fixed ? 'fixed' : 'absolute';
     note.style.left = noteData.position.x + 'px';
     note.style.top = noteData.position.y + 'px';
     note.style.width = (noteData.width || '250px');
@@ -993,6 +1036,11 @@ function createNote(noteData) {
     note.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)'; // 輕微陰影替代邊框
     note.style.border = 'none'; // 移除邊框
     note.style.borderRadius = '2px'; // 保持輕微圓角
+    
+    // 如果是固定狀態，添加自定義屬性
+    if (noteData.fixed) {
+      note.setAttribute('data-fixed', 'true');
+    }
     
     // 添加刪除按鈕
     const deleteButton = document.createElement('div');
@@ -1005,6 +1053,72 @@ function createNote(noteData) {
       saveElements();
     });
     note.appendChild(deleteButton);
+    
+    // 添加鎖定/解鎖按鈕 (圓形樣式)
+    const lockButton = document.createElement('div');
+    lockButton.className = 'focuscut-lock-button';
+    
+    // 創建鎖圖標
+    const lockIcon = document.createElement('div');
+    lockIcon.className = 'lock-icon';
+    lockButton.appendChild(lockIcon);
+    
+    lockButton.title = noteData.fixed ? 
+      chrome.i18n.getMessage('unlockPosition') || '取消固定 (目前已固定在螢幕上)' : 
+      chrome.i18n.getMessage('lockPosition') || '固定在螢幕上 (目前會跟隨頁面滾動)';
+    
+    // 如果是固定狀態，添加自定義屬性
+    if (noteData.fixed) {
+      lockButton.setAttribute('data-locked', 'true');
+    }
+    
+    lockButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      // 切換鎖定狀態
+      noteData.fixed = !noteData.fixed;
+      
+      // 更新鎖定按鈕狀態
+      if (noteData.fixed) {
+        lockButton.setAttribute('data-locked', 'true');
+        note.setAttribute('data-fixed', 'true');
+      } else {
+        lockButton.removeAttribute('data-locked');
+        note.removeAttribute('data-fixed');
+      }
+      
+      // 更新提示文字
+      lockButton.title = noteData.fixed ? 
+        chrome.i18n.getMessage('unlockPosition') || '取消固定 (目前已固定在螢幕上)' : 
+        chrome.i18n.getMessage('lockPosition') || '固定在螢幕上 (目前會跟隨頁面滾動)';
+      
+      // 保存當前滾動位置
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      
+      // 計算絕對位置和相對視窗的固定位置之間的轉換
+      const rect = note.getBoundingClientRect();
+      
+      if (noteData.fixed) {
+        // 從絕對位置轉換為固定位置
+        note.style.position = 'fixed';
+        noteData.position.x = rect.left;
+        noteData.position.y = rect.top;
+      } else {
+        // 從固定位置轉換為絕對位置
+        note.style.position = 'absolute';
+        noteData.position.x = rect.left + scrollX;
+        noteData.position.y = rect.top + scrollY;
+      }
+      
+      // 更新元素位置
+      note.style.left = noteData.position.x + 'px';
+      note.style.top = noteData.position.y + 'px';
+      
+      // 保存更改
+      saveElements();
+    });
+    note.appendChild(lockButton);
     
     // 添加調整大小控制點
     const resizer = document.createElement('div');
@@ -1175,7 +1289,8 @@ async function addNote(color = '#f8f0cc') {
     color: color,
     position: { x: 20, y: window.scrollY + 50 },
     width: '250px',
-    height: '150px'
+    height: '150px',
+    fixed: false // 預設為不固定狀態
   };
   state.elements.notes.push(noteData);
   try {
@@ -1517,7 +1632,7 @@ function createReadingMask() {
 }
 
 // 創建並顯示螢光筆筆盒
-function createHighlighterPenBox() {
+function createHighlighterPenBox(defaultColor) {
   // 檢查是否已存在筆盒
   const existingPenBox = document.getElementById('focuscut-pen-box');
   if (existingPenBox) {
@@ -1530,6 +1645,14 @@ function createHighlighterPenBox() {
     '#ffbd69', // 橙色
     '#82ccff'  // 藍色
   ];
+  
+  // 如果有指定初始顏色，確保它是第一個
+  if (defaultColor && !highlighterColors.includes(defaultColor)) {
+    // 將預設顏色設為陣列的第一個元素
+    highlighterColors.unshift(defaultColor);
+    // 保持陣列長度不變
+    highlighterColors.pop();
+  }
   
   // 創建筆盒容器
   const penBox = document.createElement('div');
@@ -2116,4 +2239,39 @@ function clearAllHighlights() {
   saveElements();
   
   console.log('FocusCut: Cleared', highlightElements.length, 'highlights');
+}
+
+// 切換螢光筆盒顯示狀態
+function toggleHighlighterBox(color) {
+  console.log('FocusCut: Toggling highlighter box');
+  let isVisible = false;
+  
+  // 檢查是否已存在筆盒
+  const existingPenBox = document.getElementById('focuscut-pen-box');
+  
+  if (existingPenBox) {
+    // 如果筆盒存在，檢查其顯示狀態
+    if (existingPenBox.style.display === 'none') {
+      // 筆盒隱藏中，顯示它
+      existingPenBox.style.display = 'flex';
+      isVisible = true;
+      console.log('FocusCut: Showing highlighter box');
+    } else {
+      // 筆盒已顯示，隱藏它
+      existingPenBox.style.display = 'none';
+      isVisible = false;
+      // 同時確保關閉螢光筆功能
+      if (state.highlighter.isActive) {
+        disableHighlighter();
+      }
+      console.log('FocusCut: Hiding highlighter box');
+    }
+  } else {
+    // 如果筆盒不存在，創建它
+    createHighlighterPenBox(color);
+    isVisible = true;
+    console.log('FocusCut: Created new highlighter box');
+  }
+  
+  return isVisible;
 }
