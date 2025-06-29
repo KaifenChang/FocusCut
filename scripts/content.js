@@ -1618,21 +1618,57 @@ function createHighlighterToolbox() {
   penBox.id = 'focuscut-pen-box';
   penBox.style.display = 'flex'; // 確保可見
   
-  // 創建螢光筆顏色（只保留4種顏色）
+  // 在最上面加入游標按鈕（退出功能）
+  const cursorBtn = document.createElement('div');
+  cursorBtn.className = 'focuscut-cursor-btn';
+  cursorBtn.title = '退出螢光筆/橡皮擦模式';
+  
+  // 使用SVG游標圖示 - 使用Adobe Illustrator設計的精緻版本（放大70%）
+  cursorBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 28 28">
+    <polygon fill="#FFFFFF" points="8.2,20.9 8.2,4.9 19.8,16.5 13,16.5 12.6,16.6 "/>
+    <polygon fill="#FFFFFF" points="17.3,21.6 13.7,23.1 9,12 12.7,10.5 "/>
+    <rect x="12.5" y="13.6" transform="matrix(0.9221 -0.3871 0.3871 0.9221 -5.7605 6.5909)" width="2" height="8"/>
+    <polygon points="9.2,7.3 9.2,18.5 12.2,15.6 12.6,15.5 17.4,15.5 "/>
+  </svg>`;
+  
+  cursorBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('FocusCut: Cursor button clicked - exiting all modes');
+    
+    // 關閉所有模式
+    if (state.highlighter.isActive) {
+      disableHighlighter();
+    }
+    if (state.eraser && state.eraser.isActive) {
+      disableEraser();
+    }
+    
+    // 移除所有活躍狀態
+    penBox.querySelectorAll('.focuscut-highlighter-pen, .focuscut-eraser-pen, .focuscut-cursor-btn').forEach(p => p.classList.remove('active'));
+  });
+  
+  penBox.appendChild(cursorBtn);
+
+  // 創建螢光筆顏色（順序：黃橙綠）
   const colors = [
     { color: '#ffff00', name: '黃色', class: 'yellow' },
-    { color: '#00ff00', name: '綠色', class: 'green' },
     { color: '#ff8000', name: '橙色', class: 'orange' },
-    { color: '#ff0000', name: '紅色', class: 'red' }
+    { color: '#00ff00', name: '綠色', class: 'green' }
   ];
   
   colors.forEach(colorData => {
     const pen = document.createElement('div');
     pen.className = 'focuscut-highlighter-pen';
-    pen.style.backgroundColor = colorData.color;
     pen.title = `螢光筆 - ${colorData.name}`;
     pen.setAttribute('data-color', colorData.color);
     pen.setAttribute('data-color-class', colorData.class);
+    
+    // 使用跟游標一樣的SVG圖示
+    pen.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32">
+      <path d="M22,2L10,14L8,24L18,22L30,10L22,2z" stroke="black" stroke-width="2" fill="${colorData.color}"/>
+    </svg>`;
     
     pen.addEventListener('click', (e) => {
       e.preventDefault();
@@ -1673,7 +1709,14 @@ function createHighlighterToolbox() {
   const eraser = document.createElement('div');
   eraser.className = 'focuscut-eraser-pen';
   eraser.title = '橡皮擦 - 清除螢光筆標記';
-  eraser.innerHTML = '🧽'; // 使用海綿 emoji 作為橡皮擦圖標
+  
+  // 使用SVG橡皮擦圖示 - 跟橡皮擦游標一樣的設計
+  eraser.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 200 200">
+    <g transform="rotate(-45 100 100)">
+      <rect x="30" y="70" width="140" height="60" rx="15" ry="15" fill="white" stroke="black" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="72" y1="70" x2="72" y2="130" stroke="black" stroke-width="10" stroke-linecap="round"/>
+    </g>
+  </svg>`;
   
   eraser.addEventListener('click', (e) => {
     e.preventDefault();

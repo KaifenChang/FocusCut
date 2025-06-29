@@ -76,30 +76,30 @@ document.addEventListener('DOMContentLoaded', () => {
   // 修復按鈕點擊問題，改用簡化的消息發送方式
   function sendMessageToTab(action, color) {
     return new Promise((resolve, reject) => {
-      try {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+    try {
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
           if (chrome.runtime.lastError) {
             console.error('Tab query error:', chrome.runtime.lastError.message);
             reject(chrome.runtime.lastError);
             return;
           }
           
-          if (tabs && tabs.length > 0 && tabs[0].id) {
-            try {
-              chrome.tabs.sendMessage(
-                tabs[0].id,
-                { action, color },
-                (response) => {
-                  if (chrome.runtime.lastError) {
+        if (tabs && tabs.length > 0 && tabs[0].id) {
+          try {
+            chrome.tabs.sendMessage(
+              tabs[0].id,
+              { action, color },
+              (response) => {
+                if (chrome.runtime.lastError) {
                     console.error('Message send error:', chrome.runtime.lastError.message);
                     reject(chrome.runtime.lastError);
                   } else {
                     console.log('Message sent successfully:', { action, color });
                     resolve(response);
-                  }
                 }
-              );
-            } catch (e) {
+              }
+            );
+          } catch (e) {
               console.error('Failed to send message:', e);
               reject(e);
             }
@@ -107,12 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const error = new Error('No active tab found');
             console.error(error.message);
             reject(error);
-          }
-        });
-      } catch (e) {
+        }
+      });
+    } catch (e) {
         console.error('Error in tab query:', e);
         reject(e);
-      }
+    }
     });
   }
   
