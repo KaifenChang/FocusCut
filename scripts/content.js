@@ -8,7 +8,8 @@ const state = {
     dividers: [],
     blocks: [],
     notes: [],
-    highlights: [] // 新增: 存儲螢光筆標記
+    highlights: [],
+    readingMask: null // 新增遮色片狀態
   },
   highlighter: {
     isActive: false,
@@ -163,6 +164,8 @@ function positionMasks() {
 }
 
 function removeReadingMask() {
+  console.log('FocusCut: Removing reading mask');
+  
   if (readingMaskTop) {
     document.body.removeChild(readingMaskTop);
     readingMaskTop = null;
@@ -178,10 +181,21 @@ function removeReadingMask() {
     readingMaskControls = null;
   }
   
+  // 移除事件監聽器
   window.removeEventListener('scroll', positionMasks);
   window.removeEventListener('resize', handleResize);
   
   isMaskActive = false;
+  
+  // 清除遮色片狀態
+  state.elements.readingMask = null;
+  
+  // 保存到存儲
+  if (state.isInitialized) {
+    saveElements();
+  }
+  
+  console.log('FocusCut: Reading mask removed and state cleared');
 }
 
 // 通知背景腳本，內容腳本已載入，並啟動初始化
@@ -450,108 +464,98 @@ function handleMessage(request, sender, sendResponse) {
 
 // 新增：使用指定樣式創建遮色片
 function createReadingMaskWithStyle(maskStyle) {
-  // 先檢查是否已經存在遮色片，避免重複創建
-  if (document.querySelector('.focuscut-reading-mask-top') || 
-      document.querySelector('.focuscut-reading-mask-bottom')) {
-    console.log('FocusCut: Reading mask already exists, removing first');
-    removeReadingMask();
-  }
-
   console.log('FocusCut: Creating reading mask with style:', maskStyle);
-
-  try {
-    // 創建上方遮色片
-    readingMaskTop = document.createElement('div');
-    readingMaskTop.className = 'focuscut-reading-mask-top';
-    readingMaskTop.style.height = topMaskHeight + 'px'; // 使用變量
-    readingMaskTop.style.zIndex = '20000'; // 確保足夠高的z-index
-    
-    // 應用選定的樣式
-    readingMaskTop.style.backgroundColor = maskStyle.color || 'rgba(120, 120, 120, 0.4)';
-    if (maskStyle.blur) {
-      readingMaskTop.style.backdropFilter = 'blur(4px)';
-      readingMaskTop.style.WebkitBackdropFilter = 'blur(4px)';
-    } else {
-      readingMaskTop.style.backdropFilter = 'none';
-      readingMaskTop.style.WebkitBackdropFilter = 'none';
-    }
-    
-    // 添加上方遮色片的下邊框調整區
-    const topEdge = document.createElement('div');
-    topEdge.className = 'focuscut-reading-mask-edge focuscut-reading-mask-edge-bottom';
-    topEdge.title = chrome.i18n.getMessage('dragToAdjustMask') || '拖曳調整遮色片高度';
-    topEdge.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      initMaskResize(e, true);
-    });
-    readingMaskTop.appendChild(topEdge);
-    
-    // 創建下方遮色片
-    readingMaskBottom = document.createElement('div');
-    readingMaskBottom.className = 'focuscut-reading-mask-bottom';
-    readingMaskBottom.style.height = bottomMaskHeight + 'px'; // 使用變量
-    readingMaskBottom.style.zIndex = '20000'; // 確保足夠高的z-index
-    
-    // 應用選定的樣式
-    readingMaskBottom.style.backgroundColor = maskStyle.color || 'rgba(120, 120, 120, 0.4)';
-    if (maskStyle.blur) {
-      readingMaskBottom.style.backdropFilter = 'blur(4px)';
-      readingMaskBottom.style.WebkitBackdropFilter = 'blur(4px)';
-    } else {
-      readingMaskBottom.style.backdropFilter = 'none';
-      readingMaskBottom.style.WebkitBackdropFilter = 'none';
-    }
-    
-    // 添加下方遮色片的上邊框調整區
-    const bottomEdge = document.createElement('div');
-    bottomEdge.className = 'focuscut-reading-mask-edge focuscut-reading-mask-edge-top';
-    bottomEdge.title = chrome.i18n.getMessage('dragToAdjustMask') || '拖曳調整遮色片高度';
-    bottomEdge.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      initMaskResize(e, false);
-    });
-    readingMaskBottom.appendChild(bottomEdge);
-    
-    // 創建控制按鈕
-    readingMaskControls = document.createElement('div');
-    readingMaskControls.className = 'focuscut-reading-mask-controls';
-    readingMaskControls.style.zIndex = '20001'; // 確保控制面板在最上層
-    
-    // 新增關閉按鈕
-    const closeButton = document.createElement('button');
-    closeButton.className = 'focuscut-close-button';
-    closeButton.title = chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片';
-    
-    // 創建關閉圖示
-    const closeIcon = document.createElement('span');
-    closeIcon.className = 'focuscut-close-icon';
-    closeButton.appendChild(closeIcon);
-    
-    closeButton.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('FocusCut: Closing reading mask');
-      removeReadingMask();
-    });
-    
-    readingMaskControls.appendChild(closeButton);
-    
-    // 添加到頁面
-    document.body.appendChild(readingMaskTop);
-    document.body.appendChild(readingMaskBottom);
-    document.body.appendChild(readingMaskControls);
-    
-    console.log('FocusCut: Mask elements added to the DOM');
-    
-    // 只添加滾動和調整視窗大小的事件
-    window.addEventListener('scroll', positionMasks);
-    window.addEventListener('resize', handleResize);
-    
-    isMaskActive = true;
-  } catch (error) {
-    console.error('FocusCut: Error creating reading mask:', error);
+  
+  // 先移除現有的遮色片
+  removeReadingMask();
+  
+  // 創建上遮色片
+  readingMaskTop = document.createElement('div');
+  readingMaskTop.className = 'focuscut-reading-mask-top';
+  readingMaskTop.style.height = topMaskHeight + 'px'; // 使用變量
+  readingMaskTop.style.zIndex = '20000'; // 確保足夠高的z-index
+  
+  // 應用樣式
+  readingMaskTop.style.backgroundColor = maskStyle.color || 'rgba(120, 120, 120, 0.4)';
+  if (maskStyle.blur) {
+    readingMaskTop.style.backdropFilter = 'blur(4px)';
+    readingMaskTop.style.WebkitBackdropFilter = 'blur(4px)';
+  } else {
+    readingMaskTop.style.backdropFilter = 'none';
+    readingMaskTop.style.WebkitBackdropFilter = 'none';
   }
+  
+  // 創建上邊緣調整器
+  const topEdge = document.createElement('div');
+  topEdge.className = 'focuscut-reading-mask-edge';
+  topEdge.style.cursor = 'ns-resize';
+  topEdge.addEventListener('mousedown', (e) => initMaskResize(e, true));
+  
+  readingMaskTop.appendChild(topEdge);
+  
+  // 創建下遮色片
+  readingMaskBottom = document.createElement('div');
+  readingMaskBottom.className = 'focuscut-reading-mask-bottom';
+  readingMaskBottom.style.height = bottomMaskHeight + 'px'; // 使用變量
+  readingMaskBottom.style.zIndex = '20000'; // 確保足夠高的z-index
+  
+  // 應用樣式
+  readingMaskBottom.style.backgroundColor = maskStyle.color || 'rgba(120, 120, 120, 0.4)';
+  if (maskStyle.blur) {
+    readingMaskBottom.style.backdropFilter = 'blur(4px)';
+    readingMaskBottom.style.WebkitBackdropFilter = 'blur(4px)';
+  } else {
+    readingMaskBottom.style.backdropFilter = 'none';
+    readingMaskBottom.style.WebkitBackdropFilter = 'none';
+  }
+  
+  // 創建下邊緣調整器
+  const bottomEdge = document.createElement('div');
+  bottomEdge.className = 'focuscut-reading-mask-edge';
+  bottomEdge.style.cursor = 'ns-resize';
+  bottomEdge.addEventListener('mousedown', (e) => initMaskResize(e, false));
+  
+  readingMaskBottom.appendChild(bottomEdge);
+  
+  // 創建控制面板
+  readingMaskControls = document.createElement('div');
+  readingMaskControls.className = 'focuscut-reading-mask-controls';
+  readingMaskControls.style.zIndex = '20001'; // 確保控制面板在最上層
+  
+  // 關閉按鈕
+  const closeButton = document.createElement('button');
+  closeButton.className = 'focuscut-mask-close-btn';
+  closeButton.title = chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片';
+  closeButton.innerHTML = '✕';
+  closeButton.addEventListener('click', () => {
+    removeReadingMask();
+  });
+  
+  readingMaskControls.appendChild(closeButton);
+  
+  // 添加到頁面
+  document.body.appendChild(readingMaskTop);
+  document.body.appendChild(readingMaskBottom);
+  document.body.appendChild(readingMaskControls);
+  
+  // 位置遮色片
+  positionMasks();
+  
+  // 設置活躍狀態
+  isMaskActive = true;
+  
+  // 保存遮色片狀態
+  state.elements.readingMask = {
+    isActive: true,
+    style: maskStyle,
+    topHeight: topMaskHeight,
+    bottomHeight: bottomMaskHeight
+  };
+  
+  // 保存到存儲
+  saveElements();
+  
+  console.log('FocusCut: Reading mask created and saved');
 }
 
 // 存儲操作
@@ -609,57 +613,49 @@ async function loadSavedElements() {
   // 如果 localStorage 中沒有數據且擴展有效，嘗試從 Chrome storage 載入
   if (!data && state.isExtensionValid && chrome?.runtime?.id) {
     try {
-      // 使用原生的 chrome.storage.local.get 而非 safeChromeCall
-      chrome.storage.local.get([pageKey], (storageData) => {
-        if (!chrome.runtime.lastError && storageData && storageData[pageKey]) {
-          // 成功獲取數據
-          data = storageData[pageKey];
-          
-          // 設置到全局狀態
-          state.elements = {
-            dividers: Array.isArray(data.dividers) ? data.dividers : [],
-            blocks: Array.isArray(data.blocks) ? data.blocks : [],
-            notes: Array.isArray(data.notes) ? data.notes : [],
-            highlights: Array.isArray(data.highlights) ? data.highlights : []
-          };
-          
-          // 顯示成功訊息
-          console.log('FocusCut: Loaded from Chrome storage');
-          
-          // 同步到 localStorage (靜默操作)
-          try {
-            localStorage.setItem(`${config.STORAGE_PREFIX}${pageKey}`, JSON.stringify(data));
-          } catch (localStorageError) {
-            // 不記錄錯誤
+      // 使用 Promise 包裝 Chrome storage API
+      data = await new Promise((resolve, reject) => {
+        chrome.storage.local.get([pageKey], (storageData) => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else if (storageData && storageData[pageKey]) {
+            resolve(storageData[pageKey]);
+          } else {
+            resolve(null);
           }
-          
-          // 創建元素
-          createElementsFromData(state.elements);
-        } else {
-          // Chrome storage 不可用，只使用 localStorage
-          state.isExtensionValid = false;
-          createElementsFromLocalData(pageKey);
-        }
+        });
       });
+      
+      if (data) {
+        console.log('FocusCut: Loaded from Chrome storage');
+        
+        // 同步到 localStorage (靜默操作)
+        try {
+          localStorage.setItem(`${config.STORAGE_PREFIX}${pageKey}`, JSON.stringify(data));
+        } catch (localStorageError) {
+          // 不記錄錯誤
+        }
+      }
     } catch (error) {
-      // 不記錄錯誤
+      // Chrome storage 不可用，標記為無效
       state.isExtensionValid = false;
-      createElementsFromLocalData(pageKey);
+      console.warn('FocusCut: Chrome storage unavailable, using localStorage only');
     }
+  }
+
+  // 處理載入的數據
+  if (data) {
+    state.elements = {
+      dividers: Array.isArray(data.dividers) ? data.dividers : [],
+      blocks: Array.isArray(data.blocks) ? data.blocks : [],
+      notes: Array.isArray(data.notes) ? data.notes : [],
+      highlights: Array.isArray(data.highlights) ? data.highlights : [],
+      readingMask: data.readingMask || null
+    };
+    await createElementsFromData(state.elements);
   } else {
-    // 直接從已經加載的 localStorage 數據創建元素
-    if (data) {
-      state.elements = {
-        dividers: Array.isArray(data.dividers) ? data.dividers : [],
-        blocks: Array.isArray(data.blocks) ? data.blocks : [],
-        notes: Array.isArray(data.notes) ? data.notes : [],
-        highlights: Array.isArray(data.highlights) ? data.highlights : []
-      };
-      createElementsFromData(state.elements);
-    } else {
-      console.log('FocusCut: No saved elements found');
-      resetElements();
-    }
+    console.log('FocusCut: No saved elements found');
+    resetElements();
   }
 }
 
@@ -673,7 +669,8 @@ async function createElementsFromLocalData(pageKey) {
         dividers: Array.isArray(data.dividers) ? data.dividers : [],
         blocks: Array.isArray(data.blocks) ? data.blocks : [],
         notes: Array.isArray(data.notes) ? data.notes : [],
-        highlights: Array.isArray(data.highlights) ? data.highlights : []
+        highlights: Array.isArray(data.highlights) ? data.highlights : [],
+        readingMask: data.readingMask || null
       };
       createElementsFromData(state.elements);
     } else {
@@ -734,6 +731,36 @@ async function createElementsFromData(elementsData) {
       }
     }
     
+    // 新增: 恢復遮色片
+    if (elementsData.readingMask && elementsData.readingMask.isActive) {
+      try {
+        console.log('FocusCut: Restoring reading mask:', elementsData.readingMask);
+        
+        // 先設置保存的高度到全域變數
+        if (elementsData.readingMask.topHeight) {
+          topMaskHeight = elementsData.readingMask.topHeight;
+        }
+        if (elementsData.readingMask.bottomHeight) {
+          bottomMaskHeight = elementsData.readingMask.bottomHeight;
+        }
+        
+        // 創建遮色片
+        createReadingMaskWithStyle(elementsData.readingMask.style);
+        
+        // 再次確保高度正確（防止被重置）
+        if (readingMaskTop && elementsData.readingMask.topHeight) {
+          readingMaskTop.style.height = elementsData.readingMask.topHeight + 'px';
+        }
+        if (readingMaskBottom && elementsData.readingMask.bottomHeight) {
+          readingMaskBottom.style.height = elementsData.readingMask.bottomHeight + 'px';
+        }
+        
+        positionMasks();
+      } catch (maskError) {
+        console.error('FocusCut: Error restoring reading mask:', maskError);
+      }
+    }
+    
     console.log('FocusCut: Successfully created elements');
   } catch (error) {
     console.error('FocusCut: Error creating elements:', error);
@@ -763,7 +790,8 @@ function resetElements() {
     dividers: [],
     blocks: [],
     notes: [],
-    highlights: []
+    highlights: [],
+    readingMask: null
   };
   
   // 移除頁面上的所有元素
@@ -817,13 +845,10 @@ function getCurrentPageKey() {
   return state.currentUrl;
 }
 
-// 啟動初始化
-initializeExtension();
-
 // 清除頁面上的所有元素
 function clearAllElements() {
   return new Promise((resolve) => {
-    const focuscutElements = document.querySelectorAll('.focuscut-divider, .focuscut-block, .focuscut-sticky-note, .focuscut-highlighter');
+    const focuscutElements = document.querySelectorAll('.focuscut-divider, .focuscut-block, .focuscut-sticky-note, .focuscut-highlighter, .focuscut-reading-mask-top, .focuscut-reading-mask-bottom, .focuscut-reading-mask-controls');
     console.log('FocusCut: Clearing', focuscutElements.length, 'existing elements');
     
     focuscutElements.forEach(el => {
@@ -1286,11 +1311,6 @@ async function addNote(color = '#f8f0cc') {
   }
 }
 
-// 確保只調用一次初始化函數，移除底部的重複調用
-// initializeExtension(); 
-
-// 最新的初始化調用移至文件頂部，確保只有一個初始化調用 
-
 // 初始化遮色片調整大小功能
 function initMaskResize(e, isTop) {
   const startY = e.clientY;
@@ -1322,6 +1342,14 @@ function initMaskResize(e, isTop) {
   function stopDrag() {
     document.removeEventListener('mousemove', doDrag);
     document.removeEventListener('mouseup', stopDrag);
+    
+    // 調整完成後保存狀態
+    if (state.elements.readingMask && state.elements.readingMask.isActive) {
+      state.elements.readingMask.topHeight = topMaskHeight;
+      state.elements.readingMask.bottomHeight = bottomMaskHeight;
+      saveElements();
+      console.log('FocusCut: Reading mask size updated and saved');
+    }
   }
   
   document.addEventListener('mousemove', doDrag);
@@ -1835,5 +1863,8 @@ function handleEraserKeyDown(e) {
     }
   }
 }
+
+// 啟動初始化
+initializeExtension();
 
  
