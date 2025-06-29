@@ -99,22 +99,6 @@ function createReadingMask() {
     readingMaskControls.className = 'focuscut-reading-mask-controls';
     readingMaskControls.style.zIndex = '20001'; // 確保控制面板在最上層
     
-    // 新增鎖定按鈕
-    const unlockButton = document.createElement('button');
-    unlockButton.className = 'focuscut-unlock-button';
-    unlockButton.title = chrome.i18n.getMessage('unlockMask') || '解鎖遮色片';
-    
-    // 創建鎖定圖示
-    const unlockIcon = document.createElement('span');
-    unlockIcon.className = 'focuscut-unlock-icon';
-    unlockButton.appendChild(unlockIcon);
-    
-    unlockButton.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('FocusCut: Toggling mask lock');
-      // 解鎖/鎖定遮色片的功能可在此實現
-    });
-    
     // 新增關閉按鈕
     const closeButton = document.createElement('button');
     closeButton.className = 'focuscut-close-button';
@@ -131,7 +115,6 @@ function createReadingMask() {
       removeReadingMask();
     });
     
-    readingMaskControls.appendChild(unlockButton);
     readingMaskControls.appendChild(closeButton);
     
     // 添加到頁面
@@ -199,18 +182,32 @@ function removeReadingMask() {
 
 // 通知背景腳本，內容腳本已載入，並啟動初始化
 try {
-  chrome.runtime.sendMessage({ action: 'contentScriptLoaded', url: window.location.href });
+  // 確保 DOM 已經載入
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeExtension();
+    });
+  } else {
+    // DOM 已經載入，立即初始化
+    setTimeout(() => {
+      initializeExtension();
+    }, 100);
+  }
   
-  // 只在這裡調用一次初始化函數
-  setTimeout(() => {
-    initializeExtension();
-  }, 100);
+  // 嘗試通知背景腳本
+  chrome.runtime.sendMessage({ action: 'contentScriptLoaded', url: window.location.href });
 } catch (error) {
   console.warn('FocusCut: Failed to send initial message:', error);
   // 即使發送初始消息失敗，仍然嘗試初始化
-  setTimeout(() => {
-    initializeExtension();
-  }, 100);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeExtension();
+    });
+  } else {
+    setTimeout(() => {
+      initializeExtension();
+    }, 100);
+  }
 }
 
 // 安全的 Chrome API 調用包裝器
@@ -248,6 +245,12 @@ async function safeChromeCall(operation) {
 
 // 初始化檢查和重試機制
 async function initializeExtension() {
+  // 防止重複初始化
+  if (state.isInitialized) {
+    console.log('FocusCut: Already initialized, skipping...');
+    return;
+  }
+  
   console.log('FocusCut: Starting initialization...');
   
   try {
@@ -262,22 +265,31 @@ async function initializeExtension() {
         return;
       }
       // 在達到最大重試次數後，只使用 localStorage，不顯示錯誤
+      console.log('FocusCut: Using fallback initialization with localStorage only');
     }
     
     await setupEventListeners();
     await loadSavedElements();
     state.isInitialized = true;
-    console.log('FocusCut: Initialization completed');
+    console.log('FocusCut: Initialization completed successfully');
+    
+    // 創建螢光筆工具箱
+    createHighlighterToolbox();
+    
   } catch (error) {
-    // 不記錄初始化錯誤
+    console.warn('FocusCut: Initialization error, using fallback:', error);
     state.isExtensionValid = false;
     
     try {
       // 靜默回退到僅使用 localStorage
+      await setupEventListeners();
       await loadSavedElements();
+      state.isInitialized = true;
+      console.log('FocusCut: Fallback initialization completed');
     } catch (retryError) {
-      // 不記錄重試錯誤
+      console.error('FocusCut: Fallback initialization failed:', retryError);
       resetElements();
+      state.isInitialized = false;
     }
   }
 }
@@ -296,10 +308,7 @@ async function checkExtensionContext() {
 
 // 設置事件監聽器
 async function setupEventListeners() {
-  // 移除現有的監聽器
-  chrome.runtime.onMessage.removeListener(handleMessage);
-  
-  // 添加新的監聽器
+  // 直接添加消息監聽器，Chrome會自動處理重複監聽器
   chrome.runtime.onMessage.addListener(handleMessage);
   
   // 監聽頁面變化
@@ -316,7 +325,8 @@ function handleMessage(request, sender, sendResponse) {
     // 檢查message的合法性
     if (!request || typeof request !== 'object') {
       console.warn('FocusCut: Received invalid message');
-      return;
+      sendResponse({ status: 'error', message: 'Invalid message' });
+      return true; // 保持消息通道開放
     }
     
     console.log('FocusCut: Content script received message:', request.action);
@@ -325,26 +335,42 @@ function handleMessage(request, sender, sendResponse) {
     switch(request.action) {
       case 'addDivider':
         addDivider(request.color);
+        sendResponse({ status: 'success' });
         break;
       
       case 'addBlock':
         addBlock(request.color);
+        sendResponse({ status: 'success' });
         break;
       
       case 'addNote':
         addNote(request.color);
+        sendResponse({ status: 'success' });
         break;
       
       case 'clearAll':
         clearAllElements();
+        sendResponse({ status: 'success' });
         break;
       
       case 'rescan':
+        resetElements();
         initializeExtension();
+        sendResponse({ status: 'success' });
+        break;
+      
+      case 'reinitialize':
+        console.log('FocusCut: Reinitializing extension...');
+        resetElements();
+        setTimeout(() => {
+          initializeExtension();
+        }, 100);
+        sendResponse({ status: 'success' });
         break;
       
       case 'enableHighlighter':
         enableHighlighter(request.color);
+        sendResponse({ status: 'success' });
         break;
       
       case 'toggleReadingMask':
@@ -354,17 +380,19 @@ function handleMessage(request, sender, sendResponse) {
         } else {
           removeReadingMask();
         }
+        sendResponse({ status: 'success' });
+        break;
+      
+      default:
+        sendResponse({ status: 'error', message: 'Unknown action' });
         break;
     }
     
-    if (sendResponse) {
-      sendResponse({ status: 'success' });
-    }
+    return true; // 保持消息通道開放以支持異步響應
   } catch (error) {
     console.error('FocusCut: Error handling message:', error);
-    if (sendResponse) {
-      sendResponse({ status: 'error', message: error.message });
-    }
+    sendResponse({ status: 'error', message: error.message });
+    return true; // 保持消息通道開放
   }
 }
 
@@ -439,22 +467,6 @@ function createReadingMaskWithStyle(maskStyle) {
     readingMaskControls.className = 'focuscut-reading-mask-controls';
     readingMaskControls.style.zIndex = '20001'; // 確保控制面板在最上層
     
-    // 新增鎖定按鈕
-    const unlockButton = document.createElement('button');
-    unlockButton.className = 'focuscut-unlock-button';
-    unlockButton.title = chrome.i18n.getMessage('unlockMask') || '解鎖遮色片';
-    
-    // 創建鎖定圖示
-    const unlockIcon = document.createElement('span');
-    unlockIcon.className = 'focuscut-unlock-icon';
-    unlockButton.appendChild(unlockIcon);
-    
-    unlockButton.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('FocusCut: Toggling mask lock');
-      // 解鎖/鎖定遮色片的功能可在此實現
-    });
-    
     // 新增關閉按鈕
     const closeButton = document.createElement('button');
     closeButton.className = 'focuscut-close-button';
@@ -471,7 +483,6 @@ function createReadingMaskWithStyle(maskStyle) {
       removeReadingMask();
     });
     
-    readingMaskControls.appendChild(unlockButton);
     readingMaskControls.appendChild(closeButton);
     
     // 添加到頁面
@@ -678,14 +689,33 @@ async function createElementsFromData(elementsData) {
   }
 }
 
-// 重置元素
+// 重置元素和狀態
 function resetElements() {
+  console.log('FocusCut: Resetting all elements and state');
+  
+  // 重置狀態
+  state.isInitialized = false;
+  state.isExtensionValid = false;
+  state.initRetryCount = 0;
+  
+  // 清空所有元素陣列
   state.elements = {
     dividers: [],
     blocks: [],
     notes: [],
-    highlights: [] // 新增: 重置高亮
+    highlights: []
   };
+  
+  // 移除頁面上的所有元素
+  clearAllElements();
+  
+  // 移除螢光筆工具箱
+  const penBox = document.getElementById('focuscut-pen-box');
+  if (penBox) {
+    penBox.remove();
+  }
+  
+  console.log('FocusCut: Reset completed');
 }
 
 // URL 變化處理
@@ -1455,4 +1485,49 @@ function restoreHighlights(highlightData) {
     // 添加到頁面
     document.body.appendChild(highlight);
   });
+}
+
+// 創建螢光筆工具箱
+function createHighlighterToolbox() {
+  // 檢查是否已經存在工具箱，避免重複創建
+  if (document.getElementById('focuscut-pen-box')) {
+    return;
+  }
+  
+  const penBox = document.createElement('div');
+  penBox.id = 'focuscut-pen-box';
+  
+  // 創建不同顏色的螢光筆
+  const colors = [
+    { color: '#ffff00', name: '黃色' },
+    { color: '#00ff00', name: '綠色' },
+    { color: '#ff00ff', name: '粉色' },
+    { color: '#00ffff', name: '青色' },
+    { color: '#ff8000', name: '橙色' }
+  ];
+  
+  colors.forEach(colorData => {
+    const pen = document.createElement('div');
+    pen.className = 'focuscut-highlighter-pen';
+    pen.style.backgroundColor = colorData.color;
+    pen.title = `螢光筆 - ${colorData.name}`;
+    
+    pen.addEventListener('click', () => {
+      // 切換螢光筆模式
+      if (state.highlighter.isActive && state.highlighter.color === colorData.color) {
+        disableHighlighter();
+        pen.classList.remove('active');
+      } else {
+        // 移除其他筆的活躍狀態
+        penBox.querySelectorAll('.focuscut-highlighter-pen').forEach(p => p.classList.remove('active'));
+        
+        enableHighlighter(colorData.color);
+        pen.classList.add('active');
+      }
+    });
+    
+    penBox.appendChild(pen);
+  });
+  
+  document.body.appendChild(penBox);
 } 

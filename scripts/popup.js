@@ -75,28 +75,45 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // 修復按鈕點擊問題，改用簡化的消息發送方式
   function sendMessageToTab(action, color) {
-    try {
-      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-        if (tabs && tabs.length > 0 && tabs[0].id) {
-          try {
-            chrome.tabs.sendMessage(
-              tabs[0].id,
-              { action, color },
-              (response) => {
-                // 忽略錯誤消息
-                if (chrome.runtime.lastError) {
-                  console.log('Ignore this error:', chrome.runtime.lastError.message);
-                }
-              }
-            );
-          } catch (e) {
-            console.log('Failed to send message:', e);
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+          if (chrome.runtime.lastError) {
+            console.error('Tab query error:', chrome.runtime.lastError.message);
+            reject(chrome.runtime.lastError);
+            return;
           }
-        }
-      });
-    } catch (e) {
-      console.log('Error in tab query:', e);
-    }
+          
+          if (tabs && tabs.length > 0 && tabs[0].id) {
+            try {
+              chrome.tabs.sendMessage(
+                tabs[0].id,
+                { action, color },
+                (response) => {
+                  if (chrome.runtime.lastError) {
+                    console.error('Message send error:', chrome.runtime.lastError.message);
+                    reject(chrome.runtime.lastError);
+                  } else {
+                    console.log('Message sent successfully:', { action, color });
+                    resolve(response);
+                  }
+                }
+              );
+            } catch (e) {
+              console.error('Failed to send message:', e);
+              reject(e);
+            }
+          } else {
+            const error = new Error('No active tab found');
+            console.error(error.message);
+            reject(error);
+          }
+        });
+      } catch (e) {
+        console.error('Error in tab query:', e);
+        reject(e);
+      }
+    });
   }
   
   // 檢查當前頁面是否支援
@@ -121,20 +138,62 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // 綁定按鈕事件 - 使用獨立事件綁定，避免嵌套在查詢中
   if (addBlockButton) {
-    addBlockButton.addEventListener('click', () => {
+    addBlockButton.addEventListener('click', async () => {
       console.log('FocusCut Popup: Reading card button clicked');
       // 確保只傳送原始Hex顏色，透明度由content.js處理
       const color = blockColorInput.value;
-      sendMessageToTab('addBlock', color);
+      try {
+        await sendMessageToTab('addBlock', color);
+        console.log('Reading card added successfully');
+      } catch (error) {
+        console.error('Failed to add reading card:', error);
+        showErrorMessage('無法新增閱讀色卡，請重新整理頁面後再試。');
+      }
     });
   }
   
   if (addNoteButton) {
-    addNoteButton.addEventListener('click', () => {
+    addNoteButton.addEventListener('click', async () => {
       console.log('FocusCut Popup: Note button clicked');
       const color = noteColorInput.value;
-      sendMessageToTab('addNote', color);
+      try {
+        await sendMessageToTab('addNote', color);
+        console.log('Note added successfully');
+      } catch (error) {
+        console.error('Failed to add note:', error);
+        showErrorMessage('無法新增便利貼，請重新整理頁面後再試。');
+      }
     });
+  }
+
+  // 顯示錯誤訊息的函數
+  function showErrorMessage(message) {
+    // 移除之前的錯誤訊息
+    const existingError = document.querySelector('.temp-error-message');
+    if (existingError) {
+      existingError.remove();
+    }
+    
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'temp-error-message';
+    errorMessage.style.color = 'red';
+    errorMessage.style.padding = '10px';
+    errorMessage.style.marginTop = '10px';
+    errorMessage.style.fontSize = '12px';
+    errorMessage.style.backgroundColor = '#ffebee';
+    errorMessage.style.border = '1px solid #ffcdd2';
+    errorMessage.style.borderRadius = '4px';
+    errorMessage.textContent = message;
+    
+    // 添加到彈出窗口中
+    document.body.appendChild(errorMessage);
+    
+    // 5秒後移除錯誤訊息
+    setTimeout(() => {
+      if (errorMessage && errorMessage.parentNode) {
+        errorMessage.parentNode.removeChild(errorMessage);
+      }
+    }, 5000);
   }
 
   // 遮色片功能設置
