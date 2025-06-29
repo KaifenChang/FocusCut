@@ -1367,15 +1367,13 @@ function enableHighlighter(color) {
   document.removeEventListener('mousedown', handleEraserMouseDown);
   document.removeEventListener('mousemove', handleEraserMouseMove);
   document.removeEventListener('mouseup', handleEraserMouseUp);
+  document.removeEventListener('keydown', handleEraserKeyDown);
   
   // 鼠標按下時開始選擇文字
   document.addEventListener('mousedown', startTextSelection);
   
   // 添加鍵盤事件監聽器，按ESC鍵退出螢光筆模式
   document.addEventListener('keydown', handleHighlighterKeyDown);
-  
-  // 創建並顯示提示（只在首次啟用時顯示）
-  showHighlighterTooltip();
   
   console.log('FocusCut: Highlighter enabled with color:', state.highlighter.color);
 }
@@ -1430,9 +1428,6 @@ function disableHighlighter() {
     selection.removeAllRanges();
   }
   
-  // 移除提示
-  removeHighlighterTooltip();
-  
   console.log('FocusCut: Highlighter mode disabled, all event listeners removed');
 }
 
@@ -1443,52 +1438,22 @@ function handleHighlighterKeyDown(e) {
   }
 }
 
-// 創建並顯示提示
-function showHighlighterTooltip() {
-  // 先移除現有提示
-  removeHighlighterTooltip();
-  
-  const tooltip = document.createElement('div');
-  tooltip.id = 'focuscut-highlighter-tooltip';
-  tooltip.style.position = 'fixed';
-  tooltip.style.bottom = '80px'; // 提高位置，避免與工具箱重疊
-  tooltip.style.left = '20px'; // 與工具箱對齊
-  tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-  tooltip.style.color = 'white';
-  tooltip.style.padding = '6px 10px'; // 縮小內邊距
-  tooltip.style.borderRadius = '4px';
-  tooltip.style.zIndex = '2147483646';
-  tooltip.style.fontSize = '12px'; // 縮小字體
-  tooltip.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
-  tooltip.style.transition = 'opacity 0.3s';
-  tooltip.style.maxWidth = '200px'; // 限制最大寬度
-  tooltip.style.whiteSpace = 'nowrap'; // 防止換行
-  tooltip.textContent = '螢光筆模式 (ESC退出)';
-  
-  document.body.appendChild(tooltip);
-  
-  // 2秒後自動消失
-  setTimeout(() => {
-    removeHighlighterTooltip();
-  }, 2000);
-}
-
-// 移除螢光筆提示
-function removeHighlighterTooltip() {
-  const tooltip = document.getElementById('focuscut-highlighter-tooltip');
-  if (tooltip) {
-    tooltip.remove();
-  }
-}
-
 // 開始文字選擇
 function startTextSelection(e) {
-  if (!state.highlighter.isActive) return;
+  console.log('FocusCut: startTextSelection called, highlighter active:', state.highlighter.isActive);
   
-  // 避免在控制元素上啟動
-  if (e.target.closest('.focuscut-block, .focuscut-divider, .focuscut-sticky-note, .focuscut-reading-mask-controls')) {
+  if (!state.highlighter.isActive) {
+    console.log('FocusCut: Highlighter not active, ignoring mousedown');
     return;
   }
+  
+  // 避免在控制元素上啟動
+  if (e.target.closest('.focuscut-block, .focuscut-divider, .focuscut-sticky-note, .focuscut-reading-mask-controls, #focuscut-pen-box')) {
+    console.log('FocusCut: Clicked on control element, ignoring');
+    return;
+  }
+  
+  console.log('FocusCut: Starting text selection');
   
   // 添加選擇樣式
   document.body.classList.add('focuscut-highlight-selecting');
@@ -1744,9 +1709,6 @@ function enableEraser() {
   // 添加鍵盤事件監聽器，按ESC鍵退出橡皮擦模式
   document.addEventListener('keydown', handleEraserKeyDown);
   
-  // 創建並顯示提示
-  showEraserTooltip();
-  
   console.log('FocusCut: Eraser mode enabled');
 }
 
@@ -1762,20 +1724,17 @@ function disableEraser() {
   // 移除橡皮擦游標樣式
   document.body.classList.remove('focuscut-eraser-cursor');
   
-  // 恢復文字選取功能
-  document.body.style.userSelect = '';
-  document.body.style.webkitUserSelect = '';
-  document.body.style.mozUserSelect = '';
-  document.body.style.msUserSelect = '';
+  // 完全恢復文字選取功能
+  document.body.style.removeProperty('user-select');
+  document.body.style.removeProperty('-webkit-user-select');
+  document.body.style.removeProperty('-moz-user-select');
+  document.body.style.removeProperty('-ms-user-select');
   
   // 移除事件監聽器
   document.removeEventListener('mousedown', handleEraserMouseDown);
   document.removeEventListener('mousemove', handleEraserMouseMove);
   document.removeEventListener('mouseup', handleEraserMouseUp);
   document.removeEventListener('keydown', handleEraserKeyDown);
-  
-  // 移除提示
-  removeEraserTooltip();
   
   console.log('FocusCut: Eraser mode disabled, all event listeners removed');
 }
@@ -1877,40 +1836,4 @@ function handleEraserKeyDown(e) {
   }
 }
 
-// 創建橡皮擦提示
-function showEraserTooltip() {
-  // 先移除現有提示
-  removeEraserTooltip();
-  
-  const tooltip = document.createElement('div');
-  tooltip.id = 'focuscut-eraser-tooltip';
-  tooltip.style.position = 'fixed';
-  tooltip.style.bottom = '80px'; // 提高位置，避免與工具箱重疊
-  tooltip.style.left = '20px'; // 與工具箱對齊
-  tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-  tooltip.style.color = 'white';
-  tooltip.style.padding = '6px 10px'; // 縮小內邊距
-  tooltip.style.borderRadius = '4px';
-  tooltip.style.zIndex = '2147483646';
-  tooltip.style.fontSize = '12px'; // 縮小字體
-  tooltip.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
-  tooltip.style.transition = 'opacity 0.3s';
-  tooltip.style.maxWidth = '200px'; // 限制最大寬度
-  tooltip.style.whiteSpace = 'nowrap'; // 防止換行
-  tooltip.textContent = '橡皮擦模式 (ESC退出)';
-  
-  document.body.appendChild(tooltip);
-  
-  // 2秒後自動消失
-  setTimeout(() => {
-    removeEraserTooltip();
-  }, 2000);
-}
-
-// 移除橡皮擦提示
-function removeEraserTooltip() {
-  const tooltip = document.getElementById('focuscut-eraser-tooltip');
-  if (tooltip) {
-    tooltip.remove();
-  }
-} 
+ 
