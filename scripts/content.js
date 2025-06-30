@@ -526,7 +526,12 @@ function createReadingMaskWithStyle(maskStyle) {
   const closeButton = document.createElement('button');
   closeButton.className = 'focuscut-mask-close-btn';
   closeButton.title = chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片';
-  closeButton.innerHTML = '✕';
+  
+  // 創建白色 SVG 叉叉圖示
+  const closeIcon = document.createElement('div');
+  closeIcon.className = 'focuscut-close-icon';
+  closeButton.appendChild(closeIcon);
+  
   closeButton.addEventListener('click', () => {
     removeReadingMask();
   });
@@ -882,7 +887,6 @@ function createDivider(dividerData) {
     
     const deleteButton = document.createElement('div');
     deleteButton.className = 'focuscut-delete-button';
-    deleteButton.innerHTML = '×';
     deleteButton.addEventListener('click', (e) => {
       e.stopPropagation();
       divider.remove();
@@ -932,7 +936,6 @@ function createBlock(blockData) {
     // 添加刪除按鈕
     const deleteButton = document.createElement('div');
     deleteButton.className = 'focuscut-delete-button';
-    deleteButton.innerHTML = '×';
     deleteButton.addEventListener('click', (e) => {
       e.stopPropagation();
       block.remove();
@@ -1122,7 +1125,6 @@ function createNote(noteData) {
     // 添加刪除按鈕
     const deleteButton = document.createElement('div');
     deleteButton.className = 'focuscut-delete-button';
-    deleteButton.innerHTML = '×';
     deleteButton.addEventListener('click', (e) => {
       e.stopPropagation();
       note.remove();
@@ -1618,6 +1620,41 @@ function createHighlighterToolbox() {
   penBox.id = 'focuscut-pen-box';
   penBox.style.display = 'flex'; // 確保可見
   
+  // 添加隱形觸發區域（右上角）
+  const closeTrigger = document.createElement('div');
+  closeTrigger.className = 'focuscut-pen-box-close-trigger';
+  penBox.appendChild(closeTrigger);
+  
+  // 添加關閉按鈕（右上角）
+  const closeButton = document.createElement('div');
+  closeButton.className = 'focuscut-pen-box-close';
+  closeButton.title = '關閉螢光筆盒';
+  
+  // 創建白色 SVG 叉叉圖示
+  const closeIcon = document.createElement('div');
+  closeIcon.className = 'focuscut-close-icon';
+  closeButton.appendChild(closeIcon);
+  
+  closeButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('FocusCut: Closing highlighter toolbox');
+    
+    // 關閉所有模式
+    if (state.highlighter.isActive) {
+      disableHighlighter();
+    }
+    if (state.eraser && state.eraser.isActive) {
+      disableEraser();
+    }
+    
+    // 隱藏螢光筆盒
+    penBox.style.display = 'none';
+  });
+  
+  penBox.appendChild(closeButton);
+  
   // 在最上面加入游標按鈕（退出功能）
   const cursorBtn = document.createElement('div');
   cursorBtn.className = 'focuscut-cursor-btn';
@@ -1666,7 +1703,7 @@ function createHighlighterToolbox() {
     pen.setAttribute('data-color-class', colorData.class);
     
     // 使用跟游標一樣的SVG圖示
-    pen.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32">
+    pen.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 32 32">
       <path d="M22,2L10,14L8,24L18,22L30,10L22,2z" stroke="black" stroke-width="2" fill="${colorData.color}"/>
     </svg>`;
     
@@ -1710,8 +1747,8 @@ function createHighlighterToolbox() {
   eraser.className = 'focuscut-eraser-pen';
   eraser.title = '橡皮擦 - 清除螢光筆標記';
   
-  // 使用SVG橡皮擦圖示 - 跟橡皮擦游標一樣的設計
-  eraser.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 200 200">
+  // 使用SVG橡皮擦圖示 - 跟橡皮擦游標一樣的設計（放大70%）
+  eraser.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 200 200">
     <g transform="rotate(-45 100 100)">
       <rect x="30" y="70" width="140" height="60" rx="15" ry="15" fill="white" stroke="black" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
       <line x1="72" y1="70" x2="72" y2="130" stroke="black" stroke-width="10" stroke-linecap="round"/>
