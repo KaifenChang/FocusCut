@@ -256,7 +256,7 @@ p:hover .focuscut-add-note-button,
   position: absolute !important;
   width: 100% !important;
   height: 10px !important;
-  background-color: rgba(200, 200, 200, 0.1) !important;
+  background-color: rgba(200, 200, 200, 0.05) !important;
   cursor: ns-resize !important;
   pointer-events: auto !important;
   z-index: 2147483646 !important; /* 降低z-index順序，確保筆盒可以顯示在上方 */
@@ -264,17 +264,27 @@ p:hover .focuscut-add-note-button,
 }
 
 .focuscut-reading-mask-edge:hover {
-  background-color: rgba(180, 180, 180, 0.5) !important;
+  background-color: rgba(180, 180, 180, 0.25) !important;
 }
 
 .focuscut-reading-mask-edge-bottom {
   bottom: 0 !important;
-  border-bottom: 1px solid rgba(150, 150, 150, 0.6) !important;
+  border-bottom: 1px solid rgba(200, 200, 200, 0.2) !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.focuscut-reading-mask-edge-bottom:hover {
+  border-bottom: 1px solid rgba(180, 180, 180, 0.5) !important;
 }
 
 .focuscut-reading-mask-edge-top {
   top: 0 !important;
-  border-top: 1px solid rgba(150, 150, 150, 0.6) !important;
+  border-top: 1px solid rgba(200, 200, 200, 0.2) !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.focuscut-reading-mask-edge-top:hover {
+  border-top: 1px solid rgba(180, 180, 180, 0.5) !important;
 }
 
 /* 鎖定按鈕樣式 */
@@ -450,9 +460,15 @@ p:hover .focuscut-add-note-button,
   position: relative;
 }
 
+.beige-blur {
+  background-color: rgba(245, 236, 210, 0.4); /* #F5ECD2 with opacity 0.4 */
+  position: relative;
+}
+
 .white-blur::after,
 .light-blur-gray::after,
-.dark-blur-gray::after {
+.dark-blur-gray::after,
+.beige-blur::after {
   content: "";
   position: absolute;
   top: 0;

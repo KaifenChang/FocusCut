@@ -487,7 +487,7 @@ function createReadingMaskWithStyle(maskStyle) {
   
   // 創建上邊緣調整器
   const topEdge = document.createElement('div');
-  topEdge.className = 'focuscut-reading-mask-edge';
+  topEdge.className = 'focuscut-reading-mask-edge focuscut-reading-mask-edge-bottom';
   topEdge.style.cursor = 'ns-resize';
   topEdge.addEventListener('mousedown', (e) => initMaskResize(e, true));
   
@@ -511,7 +511,7 @@ function createReadingMaskWithStyle(maskStyle) {
   
   // 創建下邊緣調整器
   const bottomEdge = document.createElement('div');
-  bottomEdge.className = 'focuscut-reading-mask-edge';
+  bottomEdge.className = 'focuscut-reading-mask-edge focuscut-reading-mask-edge-top';
   bottomEdge.style.cursor = 'ns-resize';
   bottomEdge.addEventListener('mousedown', (e) => initMaskResize(e, false));
   
