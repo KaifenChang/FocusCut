@@ -9,10 +9,16 @@ document.addEventListener('DOMContentLoaded', function() {
     var licenseModal = document.getElementById('license-modal');
     var closeLicenseBtn = document.getElementById('close-license');
     
-    // 點擊咖啡emoji後顯示感謝訊息和贊助按鈕
+    // 點擊咖啡emoji後切換顯示/隱藏感謝訊息和贊助按鈕
     coffeeBtn && coffeeBtn.addEventListener('click', function() {
-      // 檢查是否已經有感謝訊息，避免重複添加
-      if (!document.getElementById('thank-you-message')) {
+      // 檢查是否已經有感謝訊息
+      const existingMessage = document.getElementById('thank-you-message');
+      
+      if (existingMessage) {
+        // 如果已經存在，就移除它（收起來）
+        existingMessage.remove();
+      } else {
+        // 如果不存在，就創建並顯示
         const thankYouDiv = document.createElement('div');
         thankYouDiv.id = 'thank-you-message';
         thankYouDiv.style.cssText = `
