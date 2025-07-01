@@ -73,10 +73,10 @@
 /* 刪除按鈕 */
 .focuscut-delete-button {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 20px;
-  height: 20px;
+  top: -11px;
+  right: -11px;
+  width: 22px;
+  height: 22px;
   background-color: rgba(242, 139, 130, 0.85);
   border-radius: 50%;
   display: flex;
@@ -89,7 +89,7 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   transform: translateY(-3px) !important;
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>') !important;
-  background-size: 12px 12px !important;
+  background-size: 13px 13px !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
 }
@@ -101,7 +101,7 @@
 }
 
 .focuscut-delete-button:hover {
-  background-color: rgba(229, 57, 53, 1);
+  background-color: rgba(255, 107, 107, 1);
   transform: translateY(-3px) scale(1.1) !important;
   box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
@@ -138,7 +138,7 @@
 }
 
 .focuscut-resizer:hover {
-  background-color: rgba(229, 57, 53, 1);
+  background-color: rgba(255, 107, 107, 1);
   transform: scale(1.2);
   box-shadow: 0 2px 5px rgba(0,0,0,0.25);
 }
@@ -183,6 +183,7 @@ p:hover .focuscut-add-note-button,
   gap: 10px !important;
   z-index: 2147483646 !important; /* 降低z-index順序，確保筆盒可以顯示在上方 */
   pointer-events: auto !important;
+  align-items: center !important;
 }
 
 .focuscut-reading-mask-controls button,
@@ -290,10 +291,10 @@ p:hover .focuscut-add-note-button,
 /* 鎖定按鈕樣式 */
 .focuscut-lock-button {
   position: absolute;
-  top: -12px;
-  right: 20px;
-  width: 20px;
-  height: 20px;
+  top: -13px;
+  right: 19px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background-color: rgba(176, 176, 176, 0.85);
   cursor: pointer;
@@ -314,8 +315,8 @@ p:hover .focuscut-add-note-button,
 
 /* 鎖定圖標 */
 .focuscut-lock-button .lock-icon {
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -344,8 +345,8 @@ p:hover .focuscut-add-note-button,
 
 .focuscut-lock-button[data-locked="true"] .lock-icon {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='white' d='M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z'/%3E%3C/svg%3E");
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
 }
 
 .focuscut-lock-button[data-locked="true"]:hover {
@@ -456,19 +457,13 @@ p:hover .focuscut-add-note-button,
 }
 
 .dark-blur-gray {
-  background-color: rgba(169, 169, 169, 0.4); /* #A9A9A9 with opacity 0.4 */
-  position: relative;
-}
-
-.beige-blur {
-  background-color: rgba(245, 236, 210, 0.4); /* #F5ECD2 with opacity 0.4 */
+  background-color: rgba(100, 100, 100, 0.4); /* #646464 with opacity 0.4 */
   position: relative;
 }
 
 .white-blur::after,
 .light-blur-gray::after,
-.dark-blur-gray::after,
-.beige-blur::after {
+.dark-blur-gray::after {
   content: "";
   position: absolute;
   top: 0;
@@ -524,13 +519,13 @@ p:hover .focuscut-add-note-button,
   padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   align-items: center;
   z-index: 2147483647 !important; /* 確保在遮色片上層顯示 */
   border: 1px solid #ddd;
   width: 48px;
   transition: opacity 0.3s ease;
-  opacity: 0.85;
+  opacity: 0.65;
 }
 
 /* 螢光筆盒關閉按鈕觸發區域 */
@@ -593,11 +588,11 @@ p:hover .focuscut-add-note-button,
 
 /* 淡出效果 - 避免筆盒一直搶佔視覺焦點 */
 #focuscut-pen-box {
-  opacity: 0.8;
+  opacity: 0.65;
 }
 
 #focuscut-pen-box:hover {
-  opacity: 1;
+  opacity: 0.9;
 }
 
 /* 筆盒內的按鈕樣式 */
@@ -703,4 +698,158 @@ p:hover .focuscut-add-note-button,
 /* Eraser cursor styling */
 .focuscut-eraser-cursor {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='32' height='32'%3E%3Cg transform='rotate(-45 100 100)'%3E%3Crect x='30' y='70' width='140' height='60' rx='15' ry='15' fill='white' stroke='black' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='72' y1='70' x2='72' y2='130' stroke='black' stroke-width='10' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E") 15 15, auto !important;
+}
+
+/* 遮色片選色器容器 */
+.focuscut-mask-color-picker {
+  display: flex !important;
+  align-items: center !important;
+  position: relative !important;
+  transition: all 0.2s ease !important;
+  margin-right: 8px !important;
+}
+
+/* 隱形的懸停橋樑，連接當前指示器和選項 */
+.focuscut-mask-color-picker::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0px !important;
+  right: 24px !important;
+  width: 48px !important;
+  height: 32px !important;
+  background: transparent !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* 當前顏色指示器 */
+.focuscut-mask-color-current {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  border: none !important;
+  outline: 2px dashed rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+}
+
+/* 疊加透明層，讓 icon 顏色和遮色片顏色一致 */
+.focuscut-mask-color-current::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border-radius: 50% !important;
+  pointer-events: none !important;
+}
+
+.focuscut-mask-color-current:hover {
+  transform: scale(1.05) !important;
+  outline-color: rgba(255, 255, 255, 1) !important;
+}
+
+/* 白色背景時使用灰色 outline */
+.focuscut-mask-color-current.white-background {
+  outline-color: rgba(180, 180, 180, 0.8) !important;
+}
+
+.focuscut-mask-color-current.white-background:hover {
+  outline-color: rgba(160, 160, 160, 1) !important;
+}
+
+/* 淺灰色背景時使用 #cccccc outline */
+.focuscut-mask-color-current.light-gray-background {
+  outline-color: rgba(204, 204, 204, 0.8) !important;
+}
+
+.focuscut-mask-color-current.light-gray-background:hover {
+  outline-color: rgba(204, 204, 204, 1) !important;
+}
+
+/* 深灰色背景時使用淺灰色 outline（跟叉叉背景一樣） */
+.focuscut-mask-color-current.dark-gray-background {
+  outline-color: rgba(220, 220, 220, 0.8) !important;
+}
+
+.focuscut-mask-color-current.dark-gray-background:hover {
+  outline-color: rgba(200, 200, 200, 1) !important;
+}
+
+/* 圓形icon的hover背景效果，跟叉叉icon一致 */
+.focuscut-mask-color-current:hover::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -4px !important;
+  left: -4px !important;
+  right: -4px !important;
+  bottom: -4px !important;
+  background-color: rgba(160, 160, 160, 0.8) !important;
+  border-radius: 50% !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+}
+
+/* 選色選項容器 */
+.focuscut-mask-color-options {
+  display: flex !important;
+  gap: 12px !important;
+  align-items: center !important;
+  position: absolute !important;
+  right: 100% !important;
+  top: 0px !important;
+  padding-right: 16px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateX(10px) !important;
+  transition: all 0.2s ease !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+/* 當懸停整個選色器區域時顯示選項 */
+.focuscut-mask-color-picker:hover .focuscut-mask-color-options {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateX(0) !important;
+  pointer-events: auto !important;
+}
+
+/* 遮色片選色按鈕 */
+.focuscut-mask-color-btn {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  border: 2px solid rgba(255, 255, 255, 0.8) !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+}
+
+/* 選色按鈕也疊加透明層，保持顏色一致 */
+.focuscut-mask-color-btn::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border-radius: 50% !important;
+  pointer-events: none !important;
+}
+
+.focuscut-mask-color-btn:hover {
+  transform: scale(1.1) !important;
+  border-color: rgba(255, 255, 255, 1) !important;
+}
+
+.focuscut-mask-color-btn.active {
+  transform: scale(1.1) !important;
+  border: 3px solid rgba(128, 128, 128, 0.8) !important;
+  outline: none !important;
 } 

@@ -20,7 +20,7 @@
     "description": "Title for reading card section"
   },
   "addReadingCard": {
-    "message": "Add Reading Card",
+    "message": "Add Reading Stripe",
     "description": "Button text for adding a reading card"
   },
   "noteTitle": {
@@ -131,6 +131,7 @@
     "message": "Enable Reading Mask",
     "description": "Button to enable reading mask"
   },
+
   "closeReadingMask": {
     "message": "Close Reading Mask",
     "description": "Button to close the reading mask"
@@ -176,8 +177,12 @@
     "description": "Title for highlighter feature"
   },
   "enableHighlighter": {
-    "message": "Enable Highlighter",
+    "message": "Open Highlighter",
     "description": "Button to enable highlighter"
+  },
+  "disableHighlighter": {
+    "message": "Close Highlighter",
+    "description": "Button to disable highlighter"
   },
   "highlighterTooltip": {
     "message": "Highlighter mode active - Select text to highlight (Click the cursor icon to exit)",
@@ -186,5 +191,13 @@
   "highlighterCustomColor": {
     "message": "Custom highlighter color",
     "description": "Custom color button for highlighter"
+  },
+  "instructionsPageTitle": {
+    "message": "Instructions",
+    "description": "Instructions page title"
+  },
+  "aboutInfoTooltip": {
+    "message": "About FocusCut",
+    "description": "Tooltip for info button on instructions page"
   }
 } 

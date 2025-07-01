@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>About FocusCut</title>
+  <title>FocusCut Instructions</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -19,54 +19,72 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
     h1 {
       text-align: center;
       font-size: 20px;
-      margin-bottom: 20px;
+      margin: 0;
       color: #444;
+    }
+    
+    .info-icon {
+      position: absolute;
+      right: 0;
+      width: 24px;
+      height: 24px;
+      background-color: #5390d9;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    
+    .info-icon:hover {
+      background-color: #336699;
+      transform: scale(1.1);
     }
     
     .logo {
       display: block;
       margin: 0 auto 20px;
-      width: 80px;
-      height: 80px;
+      width: 60px;
+      height: 60px;
     }
     
-    .item {
+    .instructions {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .instructions h2 {
+      color: #495057;
+      font-size: 18px;
       margin-bottom: 15px;
-      display: flex;
-      align-items: flex-start;
+      margin-top: 0;
     }
     
-    .label {
-      font-weight: 600;
-      width: 100px;
-      flex-shrink: 0;
+    .instructions ul {
+      margin: 0;
+      padding-left: 20px;
     }
     
-    .value {
-      flex-grow: 1;
-    }
-    
-    .license-text {
-      background-color: #f9f9f9;
-      padding: 15px;
-      border-radius: 6px;
-      border: 1px solid #eee;
-      margin-top: 15px;
-      font-size: 13px;
+    .instructions li {
+      margin-bottom: 8px;
       line-height: 1.5;
-      white-space: pre-wrap;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-    
-    .footer {
-      margin-top: 30px;
-      text-align: center;
-      font-size: 14px;
-      color: #777;
     }
     
     .back-link {
@@ -74,48 +92,15 @@
       margin-top: 20px;
       color: #5390d9;
       text-decoration: none;
+      text-align: center;
+      width: 100%;
     }
     
     .back-link:hover {
       text-decoration: underline;
     }
     
-    .license-toggle {
-      background: none;
-      border: none;
-      color: #5390d9;
-      font-size: 13px;
-      cursor: pointer;
-      padding: 0;
-      text-decoration: underline;
-      margin-left: 10px;
-    }
-    
-    .license-toggle:hover {
-      color: #336699;
-    }
-    
-    .license-link {
-      color: #5390d9;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    
-    .license-link:hover {
-      text-decoration: underline;
-    }
-    
-    .repo-link {
-      color: #5390d9;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    
-    .repo-link:hover {
-      text-decoration: underline;
-    }
-    
-    /* 模態窗口樣式 */
+    /* 關於資訊彈窗樣式 */
     .modal {
       position: fixed;
       top: 0;
@@ -123,7 +108,7 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
+      display: none;
       justify-content: center;
       align-items: center;
       z-index: 1000;
@@ -156,6 +141,56 @@
       color: #333;
     }
     
+    .modal h2 {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #444;
+    }
+    
+    .item {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .label {
+      font-weight: 600;
+      width: 100px;
+      flex-shrink: 0;
+    }
+    
+    .value {
+      flex-grow: 1;
+    }
+    
+    .license-link {
+      color: #5390d9;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    .license-link:hover {
+      text-decoration: underline;
+    }
+    
+    .repo-link {
+      color: #5390d9;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    .repo-link:hover {
+      text-decoration: underline;
+    }
+    
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+    
     .license-full-text {
       white-space: pre-wrap;
       line-height: 1.6;
@@ -167,54 +202,77 @@
 <body>
   <div class="container">
     <img src="images/icon128.png" alt="FocusCut Logo" class="logo">
-    <h1 id="title">關於 FocusCut</h1>
     
-    <div class="item">
-      <div class="label" id="version-label">版本:</div>
-      <div class="value">1.0</div>
+    <div class="header">
+      <h1 id="instructions-title">使用說明</h1>
+      <div class="info-icon" id="info-btn" title="關於 FocusCut">!</div>
     </div>
     
-    <div class="item">
-      <div class="label" id="developer-label">開發者:</div>
-      <div class="value">Kaifen Chang</div>
+    <div class="instructions">
+      <ul>
+        <li id="instruction-drag">所有元素都可以拖動調整位置</li>
+        <li id="instruction-delete">滑鼠移至元素上可以看到刪除按鈕（右上角）</li>
+        <li id="instruction-resize">拖曳角落的圓點可以調整元素大小</li>
+        <li id="instruction-note-input">便利貼可以輸入多行文字筆記</li>
+        <li id="instruction-auto-save">所有更改都會自動保存</li>
+      </ul>
     </div>
     
-    <div class="item">
-      <div class="label" id="license-label">授權條款:</div>
-      <div class="value">
-        <a href="#" id="license-value" class="license-link">MIT</a>
+    <a href="popup.html" class="back-link" id="back-link">← Back</a>
+  </div>
+
+  <!-- 關於資訊彈窗 -->
+  <div id="about-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-about">&times;</span>
+      <h2 id="about-title">關於 FocusCut</h2>
+      
+      <div class="item">
+        <div class="label" id="version-label">版本:</div>
+        <div class="value">1.0</div>
       </div>
-    </div>
-    
-    <div class="footer">
-      <p>© 2025 <span id="developer-name">Kaifen Chang</span> <span id="rights-reserved">All Rights Reserved</span></p>
-      <hr style="border: 0; border-top: 1px solid #ddd; margin: 16px 0;">
-      <details style="margin-top: 24px;">
-        <summary id="sponsor-summary">☕ 贊助開發者</summary>
-        <p style="margin-top: 12px;">
-          FocusCut 是我獨立開發的小工具，希望它能幫助你更專注地閱讀。<br>
-          如果你覺得好用，也許可以請我喝杯咖啡 💛  
-          <a href="https://buymeacoffee.com/kxii" target="_blank" id="coffee-link">Buy me a coffee</a>
-        </p>
-      </details>
-      <a href="popup.html" class="back-link" id="back-link">← Back</a>
+      
+      <div class="item">
+        <div class="label" id="developer-label">開發者:</div>
+        <div class="value">Kaifen Chang</div>
+      </div>
+      
+      <div class="item">
+        <div class="label" id="license-label">授權條款:</div>
+        <div class="value">
+          <a href="#" id="license-value" class="license-link">MIT</a>
+        </div>
+      </div>
+      
+      <div class="footer">
+        <p>© 2025 <span id="developer-name">Kaifen Chang</span> <span id="rights-reserved">All Rights Reserved</span></p>
+        <hr style="border: 0; border-top: 1px solid #ddd; margin: 16px 0;">
+        <details style="margin-top: 24px;">
+          <summary id="sponsor-summary">☕ 贊助開發者</summary>
+          <p style="margin-top: 12px;">
+            FocusCut 是我獨立開發的小工具，希望它能幫助你更專注地閱讀。<br>
+            如果你覺得好用，也許可以請我喝杯咖啡 💛  
+            <a href="https://buymeacoffee.com/kxii" target="_blank" id="coffee-link">Buy me a coffee</a>
+          </p>
+        </details>
+        <div class="repository-link" style="margin-top: 20px; text-align: center;">
+          <a href="https://github.com/KaifenChang/FocusCut" target="_blank" class="repo-link" id="repo-link" style="display: inline-flex; align-items: center; gap: 5px;">
+            <svg height="16" width="16" viewBox="0 0 16 16" style="fill: currentColor;">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+            </svg>
+            <span id="repo-link-text">查看原始碼</span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- 授權條款彈窗 -->
-  <div id="license-modal" class="modal" style="display: none;">
+  <div id="license-modal" class="modal">
     <div class="modal-content">
-      <span class="close-btn">&times;</span>
+      <span class="close-btn" id="close-license">&times;</span>
       <h2 id="modal-title">MIT License</h2>
       <div class="license-full-text" id="license-full-text"></div>
-      <div class="repository-link" style="margin-top: 20px; text-align: center;">
-        <a href="https://github.com/KaifenChang/FocusCut" target="_blank" class="repo-link" id="repo-link" style="display: inline-flex; align-items: center; gap: 5px;">
-          <svg height="16" width="16" viewBox="0 0 16 16" style="fill: currentColor;">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
-          </svg>
-          <span id="repo-link-text">查看原始碼</span>
-        </a>
-      </div>
     </div>
   </div>
   

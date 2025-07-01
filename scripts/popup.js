@@ -7,10 +7,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const addNoteButton = document.getElementById('addNote');
   const blockColorInput = document.getElementById('blockColor');
   const noteColorInput = document.getElementById('noteColor');
+  const maskColorInput = document.getElementById('maskColor');
   const blockColorPreview = document.getElementById('blockColorPreview');
   const noteColorPreview = document.getElementById('noteColorPreview');
+  const maskColorPreview = document.getElementById('maskColorPreview');
   
-  // 處理自訂顏色按鈕點擊
+  // TODO: 未來功能 - 處理自訂顏色按鈕點擊
+  /*
   document.getElementById('blockCustomColor').addEventListener('click', () => {
     blockColorInput.click();
   });
@@ -18,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('noteCustomColor').addEventListener('click', () => {
     noteColorInput.click();
   });
+  */
   
   // 處理顏色輸入變化，更新預覽
   blockColorInput.addEventListener('input', () => {
@@ -31,6 +35,42 @@ document.addEventListener('DOMContentLoaded', () => {
   
   noteColorInput.addEventListener('input', () => {
     noteColorPreview.style.backgroundColor = noteColorInput.value;
+  });
+  
+  maskColorInput.addEventListener('input', async () => {
+    // 將Hex顏色轉換為rgba格式用於遮色片
+    const color = maskColorInput.value;
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    const rgbaColor = `rgba(${r}, ${g}, ${b}, 0.4)`;
+    maskColorPreview.style.backgroundColor = rgbaColor;
+    
+    // 更新選定的遮色片樣式
+    selectedMaskStyle = {
+      style: 'custom',
+      color: rgbaColor,
+      blur: true
+    };
+    
+    // 如果遮色片已開啟，即時更新樣式
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab && tab.id) {
+        chrome.tabs.sendMessage(tab.id, {
+          action: 'updateReadingMaskStyle',
+          maskStyle: selectedMaskStyle
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.log('Reading mask not active or failed to update:', chrome.runtime.lastError.message);
+          } else {
+            console.log('Reading mask style updated successfully');
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error updating reading mask style:', error);
+    }
   });
   
   // 設置預設顏色點擊事件
@@ -55,9 +95,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
+  // 設置遮色片預設顏色點擊事件
+  function setupMaskPresetColors(presetsId, colorInput, colorPreview) {
+    const presets = document.getElementById(presetsId);
+    if (presets) {
+      presets.querySelectorAll('.color-preset').forEach(preset => {
+        preset.addEventListener('click', async () => {
+          const color = preset.getAttribute('data-color');
+          const style = preset.getAttribute('data-style');
+          
+          // 更新預覽顏色
+          colorPreview.style.backgroundColor = color;
+          
+          // 儲存選定的遮色片樣式
+          selectedMaskStyle = {
+            style: style,
+            color: color,
+            blur: true
+          };
+          
+          // 如果有對應的hex值，更新顏色輸入框
+          if (style === 'white-blur') {
+            colorInput.value = '#f5f5f5';
+          } else if (style === 'light-blur-gray') {
+            colorInput.value = '#d3d3d3';
+          } else if (style === 'dark-blur-gray') {
+            colorInput.value = '#646464';
+          }
+          
+          // 如果遮色片已開啟，即時更新樣式
+          try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (tab && tab.id) {
+              chrome.tabs.sendMessage(tab.id, {
+                action: 'updateReadingMaskStyle',
+                maskStyle: selectedMaskStyle
+              }, (response) => {
+                if (chrome.runtime.lastError) {
+                  console.log('Reading mask not active or failed to update:', chrome.runtime.lastError.message);
+                } else {
+                  console.log('Reading mask style updated successfully');
+                }
+              });
+            }
+          } catch (error) {
+            console.error('Error updating reading mask style:', error);
+          }
+        });
+      });
+    }
+  }
+  
   // 設置元素的預設顏色
   setupPresetColors('blockPresets', blockColorInput, blockColorPreview);
   setupPresetColors('notePresets', noteColorInput, noteColorPreview);
+  setupMaskPresetColors('maskPresets', maskColorInput, maskColorPreview);
   
   // 修改方塊顏色預覽的背景顏色
   const updateBlockColorPreview = () => {
@@ -72,6 +164,19 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // 初始化時呼叫一次
   updateBlockColorPreview();
+  
+  // 修改遮色片顏色預覽的背景顏色
+  const updateMaskColorPreview = () => {
+    const colorValue = maskColorInput.value;
+    // 轉換為rgba，透明度0.4
+    const r = parseInt(colorValue.slice(1, 3), 16);
+    const g = parseInt(colorValue.slice(3, 5), 16);
+    const b = parseInt(colorValue.slice(5, 7), 16);
+    maskColorPreview.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.4)`;
+  };
+  
+  // 初始化遮色片顏色預覽
+  updateMaskColorPreview();
   
   // 修復按鈕點擊問題，改用簡化的消息發送方式
   function sendMessageToTab(action, color) {
@@ -196,98 +301,78 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 5000);
   }
 
-  // 遮色片功能設置
-  const maskColorPreview = document.getElementById('maskColorPreview');
+  // 遮色片功能設置 - 使用預設樣式
   let selectedMaskStyle = {
-    style: 'white-blur',
-    color: 'rgba(245, 245, 245, 0.4)'
+    style: 'dark-blur-gray',
+    color: 'rgba(120, 120, 120, 0.4)',
+    blur: true
   };
-  
-  // 找到第一個遮色片顏色選項
-  const firstMaskPreset = document.querySelector('#maskPresets .color-preset');
-  if (firstMaskPreset) {
-    // 標記為選中狀態
-    firstMaskPreset.classList.add('selected');
-    
-    // 設置初始預覽顏色
-    const bgColor = firstMaskPreset.style.backgroundColor;
-    maskColorPreview.style.backgroundColor = bgColor;
-  }
-  
-  // 為遮色片顏色預設選項添加點擊事件
-  const maskPresets = document.getElementById('maskPresets');
-  if (maskPresets) {
-    maskPresets.querySelectorAll('.color-preset').forEach(preset => {
-      preset.addEventListener('click', () => {
-        // 重置所有選項的選中狀態
-        maskPresets.querySelectorAll('.color-preset').forEach(p => {
-          p.classList.remove('selected');
+
+  const toggleReadingMaskButton = document.getElementById('toggle-reading-mask');
+  if (toggleReadingMaskButton) {
+    toggleReadingMaskButton.addEventListener('click', async () => {
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        // 檢查標籤頁是否存在
+        if (!tab || !tab.id) {
+          console.error('No active tab found');
+          return;
+        }
+        
+        // 發送消息給內容腳本，包含選中的樣式信息
+        chrome.tabs.sendMessage(tab.id, { 
+          action: 'toggleReadingMask',
+          maskStyle: selectedMaskStyle
+        }, (response) => {
+          // 根據回應更新按鈕文字
+          if (response && response.isVisible !== undefined) {
+            toggleReadingMaskButton.textContent = response.isVisible ? 
+              chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片' : 
+              chrome.i18n.getMessage('enableReadingMask') || '啟用遮色片';
+          }
+          
+          if (chrome.runtime.lastError) {
+            // 顯示錯誤訊息
+            console.error('Error toggling reading mask:', chrome.runtime.lastError.message);
+            showErrorMessage('無法啟用遮色片，請重新整理頁面後再試。');
+          }
         });
         
-        // 設置當前選項為選中狀態
-        preset.classList.add('selected');
-        
-        // 更新預覽顏色
-        const bgColor = preset.style.backgroundColor;
-        maskColorPreview.style.backgroundColor = bgColor;
-        
-        // 更新選中的樣式
-        selectedMaskStyle = {
-          style: preset.getAttribute('data-style'),
-          color: preset.getAttribute('data-color')
-        };
-        
-        console.log('Selected mask style:', selectedMaskStyle);
-      });
-    });
-  }
-
-  document.getElementById('toggle-reading-mask').addEventListener('click', async () => {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      // 檢查標籤頁是否存在
-      if (!tab || !tab.id) {
-        console.error('No active tab found');
-        return;
+        // 不再關閉彈出窗口，讓用戶可以繼續使用選單
+        // window.close();
+      } catch (error) {
+        console.error('Error toggling reading mask:', error);
+        showErrorMessage('無法啟用遮色片，請重新整理頁面後再試。');
       }
-      
-      // 發送消息給內容腳本，包含選中的樣式信息
-      chrome.tabs.sendMessage(tab.id, { 
-        action: 'toggleReadingMask',
-        maskStyle: selectedMaskStyle
-      }, (response) => {
-        // 檢查是否有回應，如果有才關閉窗口
-        if (!chrome.runtime.lastError) {
-          // 關閉彈出窗口，讓用戶可以看到遮色片效果
-          window.close();
-        } else {
-          // 顯示錯誤訊息
-          console.error('Error toggling reading mask:', chrome.runtime.lastError.message);
-          
-          // 在彈出窗口中顯示錯誤訊息
-          const errorMessage = document.createElement('div');
-          errorMessage.className = 'error-message';
-          errorMessage.style.color = 'red';
-          errorMessage.style.padding = '10px';
-          errorMessage.style.marginTop = '10px';
-          errorMessage.textContent = '無法啟用遮色片，請重新整理頁面後再試。';
-          
-          // 添加到彈出窗口中
-          document.body.appendChild(errorMessage);
-          
-          // 3秒後移除錯誤訊息
-          setTimeout(() => {
-            if (errorMessage && errorMessage.parentNode) {
-              errorMessage.parentNode.removeChild(errorMessage);
+    });
+    
+    // 檢查遮色片的當前狀態並更新按鈕文字
+    try {
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs && tabs.length > 0 && tabs[0].id) {
+          chrome.tabs.sendMessage(
+            tabs[0].id,
+            { action: 'checkReadingMaskStatus' },
+            (response) => {
+              if (chrome.runtime.lastError) {
+                console.log('Ignore this error:', chrome.runtime.lastError.message);
+                return;
+              }
+              
+              if (response && response.isVisible !== undefined) {
+                toggleReadingMaskButton.textContent = response.isVisible ? 
+                  chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片' : 
+                  chrome.i18n.getMessage('enableReadingMask') || '啟用遮色片';
+              }
             }
-          }, 3000);
+          );
         }
       });
-    } catch (error) {
-      console.error('Error toggling reading mask:', error);
+    } catch (e) {
+      console.log('Error checking reading mask status:', e);
     }
-  });
+  }
   
   // 螢光筆切換按鈕事件
   const toggleHighlighterButton = document.getElementById('toggle-highlighter');
@@ -309,7 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }, (response) => {
           // 根據回應更新按鈕文字 (現在會執行，因為不再關閉彈出窗口)
           if (response && response.isVisible !== undefined) {
-            toggleHighlighterButton.textContent = response.isVisible ? '關閉螢光筆盒' : '開啟螢光筆盒';
+            toggleHighlighterButton.textContent = response.isVisible ? 
+              chrome.i18n.getMessage('disableHighlighter') || '關閉螢光筆盒' : 
+              chrome.i18n.getMessage('enableHighlighter') || '開啟螢光筆盒';
           }
         });
         
@@ -334,7 +421,9 @@ document.addEventListener('DOMContentLoaded', () => {
               }
               
               if (response && response.isVisible !== undefined) {
-                toggleHighlighterButton.textContent = response.isVisible ? '關閉螢光筆盒' : '開啟螢光筆盒';
+                toggleHighlighterButton.textContent = response.isVisible ? 
+                  chrome.i18n.getMessage('disableHighlighter') || '關閉螢光筆盒' : 
+                  chrome.i18n.getMessage('enableHighlighter') || '開啟螢光筆盒';
               }
             }
           );

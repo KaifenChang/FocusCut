@@ -184,10 +184,7 @@
     readingMaskTitle.textContent = chrome.i18n.getMessage('readingMaskTitle');
   }
 
-  const readingMaskDescription = document.getElementById('reading-mask-description');
-  if (readingMaskDescription) {
-    readingMaskDescription.textContent = chrome.i18n.getMessage('readingMaskDescription');
-  }
+
 
   const toggleReadingMask = document.getElementById('toggle-reading-mask');
   if (toggleReadingMask) {
@@ -254,21 +251,34 @@
     }
   }
   
-  // 初始化關於頁面
+  // 初始化關於頁面（現在是使用說明頁面）
   function initializeAboutPage() {
-    // 基本文本
-    updateElement('title', 'aboutLink', 'About FocusCut');
+    // 使用說明頁面標題
+    updateElement('instructions-title', 'instructionsPageTitle', 'Instructions');
+    
+    // 使用說明內容
+    updateElement('instruction-drag', 'instructionDrag', 'All elements can be dragged to adjust position');
+    updateElement('instruction-delete', 'instructionDelete', 'Hover over elements to see delete button (top right)');
+    updateElement('instruction-resize', 'instructionResize', 'Drag corner dots to resize elements');
+    updateElement('instruction-note-input', 'instructionNoteInput', 'Sticky notes can have multi-line text');
+    updateElement('instruction-auto-save', 'instructionAutoSave', 'All changes are automatically saved');
+    
+    // 驚嘆號按鈕提示
+    updateAttribute('info-btn', 'title', 'aboutInfoTooltip', 'About FocusCut');
+    
+    // 返回按鈕
+    updateElement('back-link', 'backLink', '← Back');
+    
+    // 關於彈窗內容
+    updateElement('about-title', 'aboutLink', 'About FocusCut');
     updateElement('version-label', 'versionInfo', 'Version', ':');
     updateElement('developer-label', 'developer', 'Developer', ':');
     updateElement('license-label', 'licenseInfo', 'License', ':');
     updateElement('rights-reserved', 'allRightsReserved', 'All Rights Reserved');
-    
-    // 連結和按鈕
-    updateElement('back-link', 'backLink', '← Back');
     updateElement('license-value', 'mitLicense', 'MIT License');
     updateElement('modal-title', 'mitLicense', 'MIT License');
     
-    // 授權文本 - 比較長，特殊處理
+    // 授權文本
     updateElement('license-full-text', 'mitLicenseText', 'MIT License Text');
     
     // GitHub 連結
@@ -288,13 +298,7 @@
     updateElement('addBlock', 'addReadingCard', 'Add Reading Card');
     updateElement('addNote', 'addNote', 'Add Note');
     
-    // 指導
-    updateElement('instructions-title', 'instructionsTitle', 'Instructions');
-    updateElement('instruction-drag', 'instructionDrag', 'Drag: Click and move elements');
-    updateElement('instruction-delete', 'instructionDelete', 'Delete: Double-click elements');
-    updateElement('instruction-resize', 'instructionResize', 'Resize: Drag corner handles');
-    updateElement('instruction-note-input', 'instructionNoteInput', 'Edit note: Click to enter text');
-    updateElement('instruction-auto-save', 'instructionAutoSave', 'Auto-save: No manual saving needed');
+    // popup頁面不再有使用說明
     
     // 錯誤信息
     updateElement('error-message-1', 'errorUnsupported', 'Not supported on this page');
@@ -307,7 +311,8 @@
       updateAttribute('copyright-link', 'title', 'aboutLink', 'About FocusCut');
     }
     
-    // 顏色按鈕
+    // TODO: 未來功能 - 顏色按鈕
+    /*
     const customColorButtons = ['blockCustomColor', 'noteCustomColor'];
     for (let i = 0; i < customColorButtons.length; i++) {
       const button = document.getElementById(customColorButtons[i]);
@@ -316,6 +321,7 @@
         updateAttribute(customColorButtons[i], 'title', 'customColor', 'Custom Color');
       }
     }
+    */
     
     // 檢查並設置 Buy Me a Coffee 連結的文本
     updateCoffeeLink();

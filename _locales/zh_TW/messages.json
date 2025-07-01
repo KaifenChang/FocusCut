@@ -131,6 +131,7 @@
     "message": "啟用遮色片",
     "description": "Button to enable reading mask"
   },
+
   "closeReadingMask": {
     "message": "關閉遮色片",
     "description": "Button to close the reading mask"
@@ -176,8 +177,12 @@
     "description": "Title for highlighter feature"
   },
   "enableHighlighter": {
-    "message": "啟用螢光筆",
+    "message": "開啟螢光筆盒",
     "description": "Button to enable highlighter"
+  },
+  "disableHighlighter": {
+    "message": "關閉螢光筆盒",
+    "description": "Button to disable highlighter"
   },
   "highlighterTooltip": {
     "message": "螢光筆模式已啟動 - 選擇文字進行標記 (ESC退出)",
@@ -186,5 +191,13 @@
   "highlighterCustomColor": {
     "message": "自訂螢光筆顏色",
     "description": "Custom color button for highlighter"
+  },
+  "instructionsPageTitle": {
+    "message": "使用說明",
+    "description": "Instructions page title"
+  },
+  "aboutInfoTooltip": {
+    "message": "關於 FocusCut",
+    "description": "Tooltip for info button on instructions page"
   }
 } 

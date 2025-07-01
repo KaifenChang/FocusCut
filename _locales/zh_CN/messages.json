@@ -176,8 +176,12 @@
     "description": "Title for highlighter feature"
   },
   "enableHighlighter": {
-    "message": "启用荧光笔",
+    "message": "开启荧光笔盒",
     "description": "Button to enable highlighter"
+  },
+  "disableHighlighter": {
+    "message": "关闭荧光笔盒",
+    "description": "Button to disable highlighter"
   },
   "highlighterTooltip": {
     "message": "荧光笔模式已启动 - 选择文字进行标记 (点击笔盒中的光标图标退出)",
@@ -186,5 +190,13 @@
   "highlighterCustomColor": {
     "message": "自定义荧光笔颜色",
     "description": "Custom color button for highlighter"
+  },
+  "instructionsPageTitle": {
+    "message": "使用说明",
+    "description": "Instructions page title"
+  },
+  "aboutInfoTooltip": {
+    "message": "关于 FocusCut",
+    "description": "Tooltip for info button on instructions page"
   }
 } 

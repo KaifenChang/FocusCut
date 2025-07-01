@@ -403,10 +403,26 @@ function handleMessage(request, sender, sendResponse) {
         if (!isMaskActive) {
           // 創建遮色片時應用選定樣式
           createReadingMaskWithStyle(request.maskStyle);
+          sendResponse({ status: 'success', isVisible: true });
         } else {
           removeReadingMask();
+          sendResponse({ status: 'success', isVisible: false });
         }
-        sendResponse({ status: 'success' });
+        break;
+      
+      case 'checkReadingMaskStatus':
+        console.log('FocusCut: Checking reading mask status, active:', isMaskActive);
+        sendResponse({ status: 'success', isVisible: isMaskActive });
+        break;
+      
+      case 'updateReadingMaskStyle':
+        if (isMaskActive && request.maskStyle) {
+          console.log('FocusCut: Updating reading mask style:', request.maskStyle);
+          updateMaskStyle(request.maskStyle);
+          sendResponse({ status: 'success' });
+        } else {
+          sendResponse({ status: 'error', message: 'Reading mask not active or no style provided' });
+        }
         break;
       
       case 'toggleHighlighterBox':
@@ -522,6 +538,9 @@ function createReadingMaskWithStyle(maskStyle) {
   readingMaskControls.className = 'focuscut-reading-mask-controls';
   readingMaskControls.style.zIndex = '20001'; // 確保控制面板在最上層
   
+  // TODO: 未來功能 - 建立遮色片選色器
+  // createMaskColorPicker(readingMaskControls, maskStyle);
+  
   // 關閉按鈕
   const closeButton = document.createElement('button');
   closeButton.className = 'focuscut-mask-close-btn';
@@ -561,6 +580,142 @@ function createReadingMaskWithStyle(maskStyle) {
   saveElements();
   
   console.log('FocusCut: Reading mask created and saved');
+}
+
+// TODO: 未來功能 - 創建遮色片選色器  
+/*
+function createMaskColorPicker(container, currentStyle) {
+  // 創建選色器容器
+  const colorPicker = document.createElement('div');
+  colorPicker.className = 'focuscut-mask-color-picker';
+  
+  // 遮色片顏色選項（與popup中的一致）
+  const maskColors = [
+    { style: 'white-blur', color: 'rgba(245, 245, 245, 0.4)', displayColor: '#F5F5F5', name: '白色模糊' },
+    { style: 'light-blur-gray', color: 'rgba(211, 211, 211, 0.4)', displayColor: '#E5E5E5', name: '淺灰模糊' },
+    { style: 'dark-blur-gray', color: 'rgba(100, 100, 100, 0.4)', displayColor: '#A0A0A0', name: '深灰模糊' }
+  ];
+  
+  // 確保 currentStyle 有 style 屬性，否則使用預設值
+  if (!currentStyle.style) {
+    currentStyle.style = 'white-blur';
+  }
+  
+  // 找到當前樣式對應的顏色
+  const currentColor = maskColors.find(color => color.style === currentStyle.style) || maskColors[0];
+  
+  // 創建當前顏色指示器
+  const currentIndicator = document.createElement('div');
+  currentIndicator.className = 'focuscut-mask-color-current';
+  currentIndicator.style.backgroundColor = currentColor.displayColor;
+  currentIndicator.title = '點擊選擇遮色片顏色';
+  
+  // 根據背景顏色添加特殊class
+  if (currentColor.style === 'white-blur') {
+    currentIndicator.classList.add('white-background');
+  } else if (currentColor.style === 'light-blur-gray') {
+    currentIndicator.classList.add('light-gray-background');
+  } else if (currentColor.style === 'dark-blur-gray') {
+    currentIndicator.classList.add('dark-gray-background');
+  }
+  
+  // 創建選項容器
+  const optionsContainer = document.createElement('div');
+  optionsContainer.className = 'focuscut-mask-color-options';
+  
+  maskColors.forEach(colorData => {
+    const colorBtn = document.createElement('div');
+    colorBtn.className = 'focuscut-mask-color-btn';
+    colorBtn.title = colorData.name;
+    colorBtn.style.backgroundColor = colorData.displayColor;
+    colorBtn.setAttribute('data-style', colorData.style);
+    colorBtn.setAttribute('data-color', colorData.color);
+    
+    // 設置當前選中樣式
+    if (currentStyle.style === colorData.style) {
+      colorBtn.classList.add('active');
+    }
+    
+    colorBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log('FocusCut: Changing mask color to:', colorData.style);
+      
+      // 移除所有活躍狀態
+      optionsContainer.querySelectorAll('.focuscut-mask-color-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // 設置當前按鈕為活躍
+      colorBtn.classList.add('active');
+      
+      // 更新當前顏色指示器
+      currentIndicator.style.backgroundColor = colorData.displayColor;
+      
+      // 更新背景顏色的特殊class
+      currentIndicator.classList.remove('white-background', 'light-gray-background', 'dark-gray-background');
+      if (colorData.style === 'white-blur') {
+        currentIndicator.classList.add('white-background');
+      } else if (colorData.style === 'light-blur-gray') {
+        currentIndicator.classList.add('light-gray-background');
+      } else if (colorData.style === 'dark-blur-gray') {
+        currentIndicator.classList.add('dark-gray-background');
+      }
+      
+      // 更新遮色片樣式
+      const newStyle = {
+        style: colorData.style,
+        color: colorData.color,
+        blur: true
+      };
+      
+      updateMaskStyle(newStyle);
+    });
+    
+    optionsContainer.appendChild(colorBtn);
+  });
+  
+  // 組裝選色器
+  colorPicker.appendChild(currentIndicator);
+  colorPicker.appendChild(optionsContainer);
+  
+  // 將選色器插入到關閉按鈕之前
+  container.insertBefore(colorPicker, container.firstChild);
+}
+*/
+
+// 更新遮色片樣式
+function updateMaskStyle(newStyle) {
+  if (!readingMaskTop || !readingMaskBottom) return;
+  
+  // 更新上遮色片樣式
+  readingMaskTop.style.backgroundColor = newStyle.color;
+  if (newStyle.blur) {
+    readingMaskTop.style.backdropFilter = 'blur(4px)';
+    readingMaskTop.style.WebkitBackdropFilter = 'blur(4px)';
+  } else {
+    readingMaskTop.style.backdropFilter = 'none';
+    readingMaskTop.style.WebkitBackdropFilter = 'none';
+  }
+  
+  // 更新下遮色片樣式
+  readingMaskBottom.style.backgroundColor = newStyle.color;
+  if (newStyle.blur) {
+    readingMaskBottom.style.backdropFilter = 'blur(4px)';
+    readingMaskBottom.style.WebkitBackdropFilter = 'blur(4px)';
+  } else {
+    readingMaskBottom.style.backdropFilter = 'none';
+    readingMaskBottom.style.WebkitBackdropFilter = 'none';
+  }
+  
+  // 更新狀態
+  if (state.elements.readingMask) {
+    state.elements.readingMask.style = newStyle;
+    saveElements();
+  }
+  
+  console.log('FocusCut: Mask style updated to:', newStyle);
 }
 
 // 存儲操作
@@ -749,8 +904,13 @@ async function createElementsFromData(elementsData) {
           bottomMaskHeight = elementsData.readingMask.bottomHeight;
         }
         
-        // 創建遮色片
-        createReadingMaskWithStyle(elementsData.readingMask.style);
+        // 創建遮色片 - 確保傳入完整的樣式對象
+        const maskStyle = elementsData.readingMask.style || {
+          style: 'white-blur',
+          color: 'rgba(245, 245, 245, 0.4)',
+          blur: true
+        };
+        createReadingMaskWithStyle(maskStyle);
         
         // 再次確保高度正確（防止被重置）
         if (readingMaskTop && elementsData.readingMask.topHeight) {
@@ -1091,6 +1251,8 @@ function initResize(e, element, data, type) {
         element.style.height = newHeight + 'px';
         if (data.size) {
           data.size.height = newHeight;
+        } else if (typeof data.height !== 'undefined') {
+          data.height = newHeight + 'px';
         }
       }
     }
@@ -1111,7 +1273,9 @@ function createNote(noteData) {
   return new Promise((resolve) => {
     const note = document.createElement('div');
     note.className = 'focuscut-sticky-note';
-    note.style.position = 'absolute';
+    
+    // 設置初始樣式和位置，支援鎖定功能
+    note.style.position = noteData.fixed ? 'fixed' : 'absolute';
     note.style.left = noteData.position.x + 'px';
     note.style.top = noteData.position.y + 'px';
     note.style.width = (noteData.width || '250px');
@@ -1121,6 +1285,11 @@ function createNote(noteData) {
     note.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)'; // 輕微陰影替代邊框
     note.style.border = 'none'; // 移除邊框
     note.style.borderRadius = '2px'; // 保持輕微圓角
+    
+    // 如果是固定狀態，添加自定義屬性
+    if (noteData.fixed) {
+      note.setAttribute('data-fixed', 'true');
+    }
     
     // 添加刪除按鈕
     const deleteButton = document.createElement('div');
@@ -1132,6 +1301,72 @@ function createNote(noteData) {
       saveElements();
     });
     note.appendChild(deleteButton);
+    
+    // 添加鎖定/解鎖按鈕 (圓形樣式)
+    const lockButton = document.createElement('div');
+    lockButton.className = 'focuscut-lock-button';
+    
+    // 創建鎖圖標
+    const lockIcon = document.createElement('div');
+    lockIcon.className = 'lock-icon';
+    lockButton.appendChild(lockIcon);
+    
+    lockButton.title = noteData.fixed ? 
+      chrome.i18n.getMessage('unlockPosition') || '取消固定 (目前已固定在螢幕上)' : 
+      chrome.i18n.getMessage('lockPosition') || '固定在螢幕上 (目前會跟隨頁面滾動)';
+    
+    // 如果是固定狀態，添加自定義屬性
+    if (noteData.fixed) {
+      lockButton.setAttribute('data-locked', 'true');
+    }
+    
+    lockButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      // 切換鎖定狀態
+      noteData.fixed = !noteData.fixed;
+      
+      // 更新鎖定按鈕狀態
+      if (noteData.fixed) {
+        lockButton.setAttribute('data-locked', 'true');
+        note.setAttribute('data-fixed', 'true');
+      } else {
+        lockButton.removeAttribute('data-locked');
+        note.removeAttribute('data-fixed');
+      }
+      
+      // 更新提示文字
+      lockButton.title = noteData.fixed ? 
+        chrome.i18n.getMessage('unlockPosition') || '取消固定 (目前已固定在螢幕上)' : 
+        chrome.i18n.getMessage('lockPosition') || '固定在螢幕上 (目前會跟隨頁面滾動)';
+      
+      // 保存當前滾動位置
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      
+      // 計算絕對位置和相對視窗的固定位置之間的轉換
+      const rect = note.getBoundingClientRect();
+      
+      if (noteData.fixed) {
+        // 從絕對位置轉換為固定位置
+        note.style.position = 'fixed';
+        noteData.position.x = rect.left;
+        noteData.position.y = rect.top;
+      } else {
+        // 從固定位置轉換為絕對位置
+        note.style.position = 'absolute';
+        noteData.position.x = rect.left + scrollX;
+        noteData.position.y = rect.top + scrollY;
+      }
+      
+      // 更新元素位置
+      note.style.left = noteData.position.x + 'px';
+      note.style.top = noteData.position.y + 'px';
+      
+      // 保存更改
+      saveElements();
+    });
+    note.appendChild(lockButton);
     
     // 添加調整大小控制點
     const resizer = document.createElement('div');
@@ -1194,6 +1429,8 @@ function makeDraggable(element, data) {
     // 排除點擊控制元素的情況
     if (e.target.classList.contains('focuscut-delete-button') || 
         e.target.classList.contains('focuscut-resizer') ||
+        e.target.classList.contains('focuscut-lock-button') ||
+        e.target.classList.contains('lock-icon') ||
         e.target.classList.contains('note-delete') ||
         e.target.classList.contains('note-color-picker') ||
         e.target.tagName.toLowerCase() === 'textarea') {
@@ -1232,8 +1469,14 @@ function makeDraggable(element, data) {
     const dy = e.clientY - startY;
     
     // 更新元素位置
-    const newLeft = initialLeft + dx;
-    const newTop = initialTop + dy;
+    let newLeft = initialLeft + dx;
+    let newTop = initialTop + dy;
+    
+    // 對於固定定位的元素，確保位置不會超出視窗範圍
+    if (data.fixed) {
+      newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - element.offsetWidth));
+      newTop = Math.max(0, Math.min(newTop, window.innerHeight - element.offsetHeight));
+    }
     
     element.style.left = newLeft + 'px';
     element.style.top = newTop + 'px';
@@ -1302,7 +1545,8 @@ async function addNote(color = '#f8f0cc') {
     color: color,
     position: { x: 20, y: window.scrollY + 50 },
     width: '250px',
-    height: '150px'
+    height: '150px',
+    fixed: false  // 默認不鎖定，會隨頁面滾動
   };
   state.elements.notes.push(noteData);
   try {
