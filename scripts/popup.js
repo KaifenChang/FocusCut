@@ -8,9 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const blockColorInput = document.getElementById('blockColor');
   const noteColorInput = document.getElementById('noteColor');
   const maskColorInput = document.getElementById('maskColor');
-  const blockColorPreview = document.getElementById('blockColorPreview');
-  const noteColorPreview = document.getElementById('noteColorPreview');
-  const maskColorPreview = document.getElementById('maskColorPreview');
+
   
   // TODO: 未來功能 - 處理自訂顏色按鈕點擊
   /*
@@ -23,20 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   */
   
-  // 處理顏色輸入變化，更新預覽
-  blockColorInput.addEventListener('input', () => {
-    // 直接從content.js採用相同的顏色轉換邏輯
-    const color = blockColorInput.value;
-    const r = parseInt(color.slice(1, 3), 16);
-    const g = parseInt(color.slice(3, 5), 16);
-    const b = parseInt(color.slice(5, 7), 16);
-    blockColorPreview.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
-  });
-  
-  noteColorInput.addEventListener('input', () => {
-    noteColorPreview.style.backgroundColor = noteColorInput.value;
-  });
-  
   maskColorInput.addEventListener('input', async () => {
     // 將Hex顏色轉換為rgba格式用於遮色片
     const color = maskColorInput.value;
@@ -44,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const g = parseInt(color.slice(3, 5), 16);
     const b = parseInt(color.slice(5, 7), 16);
     const rgbaColor = `rgba(${r}, ${g}, ${b}, 0.4)`;
-    maskColorPreview.style.backgroundColor = rgbaColor;
     
     // 更新選定的遮色片樣式
     selectedMaskStyle = {
@@ -74,38 +57,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // 設置預設顏色點擊事件
-  function setupPresetColors(presetsId, colorInput, colorPreview) {
+  function setupPresetColors(presetsId, colorInput) {
     const presets = document.getElementById(presetsId);
     if (presets) {
       presets.querySelectorAll('.color-preset').forEach(preset => {
         preset.addEventListener('click', () => {
+          // 移除所有selected class
+          presets.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+          
+          // 為點擊的色票添加selected class
+          preset.classList.add('selected');
+          
           const color = preset.getAttribute('data-color');
           colorInput.value = color;
-          
-          // 更新預覽顏色 - 確保完全一致的外觀
-          if (presetsId === 'blockPresets') {
-            // 閱讀色卡需要透明效果和邊框
-            colorPreview.style.backgroundColor = preset.style.backgroundColor;
-            colorPreview.style.border = preset.style.border;
-          } else {
-            colorPreview.style.backgroundColor = color;
-          }
         });
       });
     }
   }
   
   // 設置遮色片預設顏色點擊事件
-  function setupMaskPresetColors(presetsId, colorInput, colorPreview) {
+  function setupMaskPresetColors(presetsId, colorInput) {
     const presets = document.getElementById(presetsId);
     if (presets) {
       presets.querySelectorAll('.color-preset').forEach(preset => {
         preset.addEventListener('click', async () => {
+          // 移除所有selected class
+          presets.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+          
+          // 為點擊的色票添加selected class
+          preset.classList.add('selected');
+          
           const color = preset.getAttribute('data-color');
           const style = preset.getAttribute('data-style');
-          
-          // 更新預覽顏色
-          colorPreview.style.backgroundColor = color;
           
           // 儲存選定的遮色片樣式
           selectedMaskStyle = {
@@ -147,36 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // 設置元素的預設顏色
-  setupPresetColors('blockPresets', blockColorInput, blockColorPreview);
-  setupPresetColors('notePresets', noteColorInput, noteColorPreview);
-  setupMaskPresetColors('maskPresets', maskColorInput, maskColorPreview);
+  setupPresetColors('blockPresets', blockColorInput);
+  setupPresetColors('notePresets', noteColorInput);
+  setupMaskPresetColors('maskPresets', maskColorInput);
   
-  // 修改方塊顏色預覽的背景顏色
-  const updateBlockColorPreview = () => {
-    const colorValue = blockColorInput.value;
-    // 轉換為rgba，透明度0.15 - 與content.js使用相同值
-    const r = parseInt(colorValue.slice(1, 3), 16);
-    const g = parseInt(colorValue.slice(3, 5), 16);
-    const b = parseInt(colorValue.slice(5, 7), 16);
-    blockColorPreview.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
-    blockColorPreview.style.border = '1px dashed rgba(0, 0, 0, 0.2)';
-  };
-  
-  // 初始化時呼叫一次
-  updateBlockColorPreview();
-  
-  // 修改遮色片顏色預覽的背景顏色
-  const updateMaskColorPreview = () => {
-    const colorValue = maskColorInput.value;
-    // 轉換為rgba，透明度0.4
-    const r = parseInt(colorValue.slice(1, 3), 16);
-    const g = parseInt(colorValue.slice(3, 5), 16);
-    const b = parseInt(colorValue.slice(5, 7), 16);
-    maskColorPreview.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.4)`;
-  };
-  
-  // 初始化遮色片顏色預覽
-  updateMaskColorPreview();
+
   
   // 修復按鈕點擊問題，改用簡化的消息發送方式
   function sendMessageToTab(action, color) {
@@ -308,9 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
     blur: true
   };
 
-  const toggleReadingMaskButton = document.getElementById('toggle-reading-mask');
-  if (toggleReadingMaskButton) {
-    toggleReadingMaskButton.addEventListener('click', async () => {
+  const toggleReadingMaskCheckbox = document.getElementById('toggle-reading-mask');
+  if (toggleReadingMaskCheckbox) {
+    toggleReadingMaskCheckbox.addEventListener('change', async () => {
       try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         
@@ -325,29 +283,27 @@ document.addEventListener('DOMContentLoaded', () => {
           action: 'toggleReadingMask',
           maskStyle: selectedMaskStyle
         }, (response) => {
-          // 根據回應更新按鈕文字
+          // 確保checkbox狀態與實際狀態同步
           if (response && response.isVisible !== undefined) {
-            toggleReadingMaskButton.textContent = response.isVisible ? 
-              chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片' : 
-              chrome.i18n.getMessage('enableReadingMask') || '啟用遮色片';
+            toggleReadingMaskCheckbox.checked = response.isVisible;
           }
           
           if (chrome.runtime.lastError) {
-            // 顯示錯誤訊息
+            // 顯示錯誤訊息並恢復checkbox狀態
             console.error('Error toggling reading mask:', chrome.runtime.lastError.message);
+            toggleReadingMaskCheckbox.checked = !toggleReadingMaskCheckbox.checked;
             showErrorMessage('無法啟用遮色片，請重新整理頁面後再試。');
           }
         });
         
-        // 不再關閉彈出窗口，讓用戶可以繼續使用選單
-        // window.close();
       } catch (error) {
         console.error('Error toggling reading mask:', error);
+        toggleReadingMaskCheckbox.checked = !toggleReadingMaskCheckbox.checked;
         showErrorMessage('無法啟用遮色片，請重新整理頁面後再試。');
       }
     });
     
-    // 檢查遮色片的當前狀態並更新按鈕文字
+    // 檢查遮色片的當前狀態並更新checkbox狀態
     try {
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         if (tabs && tabs.length > 0 && tabs[0].id) {
@@ -361,9 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
               }
               
               if (response && response.isVisible !== undefined) {
-                toggleReadingMaskButton.textContent = response.isVisible ? 
-                  chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片' : 
-                  chrome.i18n.getMessage('enableReadingMask') || '啟用遮色片';
+                toggleReadingMaskCheckbox.checked = response.isVisible;
               }
             }
           );
@@ -374,10 +328,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  // 螢光筆切換按鈕事件
-  const toggleHighlighterButton = document.getElementById('toggle-highlighter');
-  if (toggleHighlighterButton) {
-    toggleHighlighterButton.addEventListener('click', async () => {
+  // 螢光筆切換開關事件
+  const toggleHighlighterCheckbox = document.getElementById('toggle-highlighter');
+  if (toggleHighlighterCheckbox) {
+    toggleHighlighterCheckbox.addEventListener('change', async () => {
       try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         
@@ -388,26 +342,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // 發送消息給內容腳本，來切換螢光筆盒
-        await chrome.tabs.sendMessage(tab.id, { 
+        chrome.tabs.sendMessage(tab.id, { 
           action: 'toggleHighlighterBox',
           color: '#ffff00' // 預設黃色
         }, (response) => {
-          // 根據回應更新按鈕文字 (現在會執行，因為不再關閉彈出窗口)
+          // 確保checkbox狀態與實際狀態同步
           if (response && response.isVisible !== undefined) {
-            toggleHighlighterButton.textContent = response.isVisible ? 
-              chrome.i18n.getMessage('disableHighlighter') || '關閉螢光筆盒' : 
-              chrome.i18n.getMessage('enableHighlighter') || '開啟螢光筆盒';
+            toggleHighlighterCheckbox.checked = response.isVisible;
+          }
+          
+          if (chrome.runtime.lastError) {
+            // 恢復checkbox狀態
+            console.error('Error toggling highlighter:', chrome.runtime.lastError.message);
+            toggleHighlighterCheckbox.checked = !toggleHighlighterCheckbox.checked;
           }
         });
         
-        // 不再關閉彈出窗口，讓用戶可以繼續使用目錄
-        // window.close();
       } catch (error) {
         console.error('Error toggling highlighter:', error);
+        toggleHighlighterCheckbox.checked = !toggleHighlighterCheckbox.checked;
       }
     });
     
-    // 檢查螢光筆盒的當前狀態並更新按鈕文字
+    // 檢查螢光筆盒的當前狀態並更新checkbox狀態
     try {
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         if (tabs && tabs.length > 0 && tabs[0].id) {
@@ -421,9 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
               }
               
               if (response && response.isVisible !== undefined) {
-                toggleHighlighterButton.textContent = response.isVisible ? 
-                  chrome.i18n.getMessage('disableHighlighter') || '關閉螢光筆盒' : 
-                  chrome.i18n.getMessage('enableHighlighter') || '開啟螢光筆盒';
+                toggleHighlighterCheckbox.checked = response.isVisible;
               }
             }
           );

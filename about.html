@@ -2,102 +2,212 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>FocusCut Instructions</title>
+  <title>FocusCut 使用說明</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      width: 300px;
+      width: 350px;
       margin: 0 auto;
-      padding: 15px;
+      padding: 20px;
       line-height: 1.6;
       color: #333;
+      background-color: #f8f9fa;
     }
     
     .container {
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      background-color: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom: 0;
     }
     
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 30px;
-      position: relative;
+      text-align: center;
+      margin-bottom: 35px;
     }
     
     h1 {
       text-align: center;
-      font-size: 20px;
+      font-size: 18px;
       margin: 0;
-      color: #444;
+      color: #2c3e50;
+      font-weight: 600;
     }
     
-    .info-icon {
-      position: absolute;
-      right: 0;
+
+    
+
+    
+    .feature-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 10px;
+      border-left: 4px solid #3498db;
+    }
+    
+    .feature-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0 0 15px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .feature-icon {
       width: 24px;
       height: 24px;
-      background-color: #5390d9;
-      color: white;
-      border-radius: 50%;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
       font-size: 14px;
-      font-weight: bold;
-      transition: background-color 0.2s, transform 0.2s;
     }
     
-    .info-icon:hover {
-      background-color: #336699;
-      transform: scale(1.1);
-    }
+    .icon-card { background: linear-gradient(135deg, #ff6b6b, #ffa8a8); }
+    .icon-mask { background: linear-gradient(135deg, #74b9ff, #a29bfe); }
+    .icon-note { background: linear-gradient(135deg, #fdcb6e, #f39c12); }
+    .icon-highlighter { background: linear-gradient(135deg, #00b894, #55efc4); }
     
-    .logo {
-      display: block;
-      margin: 0 auto 20px;
-      width: 60px;
-      height: 60px;
-    }
-    
-    .instructions {
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      padding: 20px;
-      border: 1px solid #e9ecef;
-    }
-    
-    .instructions h2 {
-      color: #495057;
-      font-size: 18px;
+    .feature-description {
+      color: #5a6c7d;
       margin-bottom: 15px;
-      margin-top: 0;
+      font-size: 14px;
     }
     
-    .instructions ul {
+    .feature-steps {
       margin: 0;
       padding-left: 20px;
     }
     
-    .instructions li {
+    .feature-steps li {
       margin-bottom: 8px;
+      color: #34495e;
+      font-size: 14px;
+    }
+    
+    .tip-box {
+      background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+      border: 1px solid #27ae60;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    
+    .tip-title {
+      font-weight: 600;
+      color: #27ae60;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .tip-content {
+      color: #2d5016;
+      font-size: 13px;
+      margin: 0;
+    }
+    
+    .general-tips {
+      margin-bottom: 24px;
+    }
+
+    .operation-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .operation-list li {
+      padding: 8px 0;
+      color: #495057;
+      font-size: 14px;
       line-height: 1.5;
     }
+
+    .operation-list strong {
+      color: #343a40;
+      font-weight: 600;
+    }
+
+    .features-section {
+      margin-bottom: 20px;
+    }
+
+    .feature-item {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid #e9ecef;
+    }
+
+    .feature-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #343a40;
+      margin: 0 0 8px 0;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: #6c757d;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .feature-list {
+      margin-top: 16px;
+    }
+
+    .feature-item-compact {
+      padding: 12px 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .feature-item-compact:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .feature-item-compact:first-child {
+      padding-top: 0;
+    }
+
+    .feature-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #343a40;
+      margin: 0 0 6px 0;
+    }
+
+
     
     .back-link {
       display: inline-block;
-      margin-top: 20px;
-      color: #5390d9;
+      margin: 10px auto 0 auto;
+      color: #9ca3af;
       text-decoration: none;
       text-align: center;
-      width: 100%;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
     }
     
     .back-link:hover {
-      text-decoration: underline;
+      color: #6b7280;
+      background-color: #f3f4f6;
+    }
+
+    .version-info {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 12px;
+      color: #7f8c8d;
+      padding: 0 20px;
     }
     
     /* 關於資訊彈窗樣式 */
@@ -116,40 +226,40 @@
     
     .modal-content {
       background-color: white;
-      padding: 20px;
-      border-radius: 8px;
+      padding: 25px;
+      border-radius: 12px;
       width: 90%;
-      max-width: 280px;
+      max-width: 320px;
       max-height: 80vh;
       overflow-y: auto;
       position: relative;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     .close-btn {
       position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 24px;
+      top: 15px;
+      right: 20px;
+      font-size: 28px;
       font-weight: bold;
-      color: #666;
+      color: #95a5a6;
       cursor: pointer;
       transition: color 0.2s;
     }
     
     .close-btn:hover {
-      color: #333;
+      color: #e74c3c;
     }
     
     .modal h2 {
       text-align: center;
-      font-size: 18px;
-      margin-bottom: 20px;
-      color: #444;
+      font-size: 20px;
+      margin-bottom: 25px;
+      color: #2c3e50;
     }
     
     .item {
-      margin-bottom: 15px;
+      margin-bottom: 18px;
       display: flex;
       align-items: flex-start;
     }
@@ -158,123 +268,74 @@
       font-weight: 600;
       width: 100px;
       flex-shrink: 0;
+      color: #34495e;
     }
     
     .value {
       flex-grow: 1;
+      color: #5a6c7d;
     }
     
-    .license-link {
-      color: #5390d9;
+    .license-link, .repo-link {
+      color: #9ca3af;
       text-decoration: none;
       cursor: pointer;
     }
     
-    .license-link:hover {
-      text-decoration: underline;
-    }
-    
-    .repo-link {
-      color: #5390d9;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    
-    .repo-link:hover {
+    .license-link:hover, .repo-link:hover {
       text-decoration: underline;
     }
     
     .footer {
-      margin-top: 20px;
+      margin-top: 25px;
       text-align: center;
       font-size: 14px;
-      color: #777;
+      color: #7f8c8d;
     }
     
     .license-full-text {
       white-space: pre-wrap;
       line-height: 1.6;
       margin-top: 15px;
-      font-size: 14px;
+      font-size: 13px;
+      color: #5a6c7d;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="images/icon128.png" alt="FocusCut Logo" class="logo">
-    
     <div class="header">
-      <h1 id="instructions-title">使用說明</h1>
-      <div class="info-icon" id="info-btn" title="關於 FocusCut">!</div>
+      <h1 id="instructions-title">FocusTint Reader 使用說明</h1>
     </div>
     
-    <div class="instructions">
-      <ul>
-        <li id="instruction-drag">所有元素都可以拖動調整位置</li>
-        <li id="instruction-delete">滑鼠移至元素上可以看到刪除按鈕（右上角）</li>
-        <li id="instruction-resize">拖曳角落的圓點可以調整元素大小</li>
-        <li id="instruction-note-input">便利貼可以輸入多行文字筆記</li>
-        <li id="instruction-auto-save">所有更改都會自動保存</li>
+    <!-- 操作說明 -->
+    <div class="general-tips">
+      <ul class="operation-list">
+        <li><strong>拖動移動：</strong>按住拖曳卡片調整位置</li>
+        <li><strong>調整大小：</strong>拖曳角落圓點改變卡片尺寸</li>
+        <li><strong>刪除卡片：</strong>滑鼠停留後，點擊右上角 ×</li>
+        <li><strong>鎖定功能：</strong>點鎖頭圖示將卡片固定在螢幕</li>
+        <li><strong>自動保存：</strong>所有變更會自動儲存，重新整理後仍保留</li>
       </ul>
     </div>
     
-    <a href="popup.html" class="back-link" id="back-link">← Back</a>
-  </div>
-
-  <!-- 關於資訊彈窗 -->
-  <div id="about-modal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="close-about">&times;</span>
-      <h2 id="about-title">關於 FocusCut</h2>
-      
-      <div class="item">
-        <div class="label" id="version-label">版本:</div>
-        <div class="value">1.0</div>
-      </div>
-      
-      <div class="item">
-        <div class="label" id="developer-label">開發者:</div>
-        <div class="value">Kaifen Chang</div>
-      </div>
-      
-      <div class="item">
-        <div class="label" id="license-label">授權條款:</div>
-        <div class="value">
-          <a href="#" id="license-value" class="license-link">MIT</a>
-        </div>
-      </div>
-      
-      <div class="footer">
-        <p>© 2025 <span id="developer-name">Kaifen Chang</span> <span id="rights-reserved">All Rights Reserved</span></p>
-        <hr style="border: 0; border-top: 1px solid #ddd; margin: 16px 0;">
-        <details style="margin-top: 24px;">
-          <summary id="sponsor-summary">☕ 贊助開發者</summary>
-          <p style="margin-top: 12px;">
-            FocusCut 是我獨立開發的小工具，希望它能幫助你更專注地閱讀。<br>
-            如果你覺得好用，也許可以請我喝杯咖啡 💛  
-            <a href="https://buymeacoffee.com/kxii" target="_blank" id="coffee-link">Buy me a coffee</a>
-          </p>
-        </details>
-        <div class="repository-link" style="margin-top: 20px; text-align: center;">
-          <a href="https://github.com/KaifenChang/FocusCut" target="_blank" class="repo-link" id="repo-link" style="display: inline-flex; align-items: center; gap: 5px;">
-            <svg height="16" width="16" viewBox="0 0 16 16" style="fill: currentColor;">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
-            </svg>
-            <span id="repo-link-text">查看原始碼</span>
-          </a>
-        </div>
-      </div>
+    <div style="text-align: center;">
+      <a href="popup.html" class="back-link" id="back-link">← 返回主選單</a>
     </div>
   </div>
-
-  <!-- 授權條款彈窗 -->
-  <div id="license-modal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="close-license">&times;</span>
-      <h2 id="modal-title">MIT License</h2>
-      <div class="license-full-text" id="license-full-text"></div>
-    </div>
+  
+  <div class="version-info">
+    <p>
+      FocusTint Reader v1.0<br>
+      專注閱讀體驗 ・ 視覺輔助<br>
+      <span style="color: #d1d5db; font-size: 12px; margin: 8px 0 4px 0; display: block;">―――――</span>
+      <span id="coffee-btn" style="color: #d1d5db; cursor: pointer; font-size: 12px; display: inline-block; transition: color 0.2s ease;" onmouseover="this.style.color='#9ca3af'" onmouseout="this.style.color='#d1d5db'">☕</span>
+    </p>
   </div>
+
+
+
+
   
   <script src="scripts/i18n.js"></script>
   <script src="scripts/about.js"></script>

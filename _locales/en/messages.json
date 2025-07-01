@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "FocusCut",
+    "message": "FocusTint Reader",
     "description": "Extension name"
   },
   "extDescription": {
@@ -16,7 +16,7 @@
     "description": "Button text for adding a divider"
   },
   "readingCardTitle": {
-    "message": "Transparent Reading Card",
+    "message": "Reading Card",
     "description": "Title for reading card section"
   },
   "addReadingCard": {
@@ -60,7 +60,7 @@
     "description": "Instruction about auto-saving"
   },
   "errorUnsupported": {
-    "message": "FocusCut cannot work on this page.",
+    "message": "FocusTint Reader cannot work on this page.",
     "description": "Error message for unsupported pages"
   },
   "errorUseOnRegular": {
@@ -72,7 +72,7 @@
     "description": "Copyright page title"
   },
   "aboutLink": {
-    "message": "About FocusCut",
+    "message": "About FocusTint Reader",
     "description": "Link text to about page"
   },
   "versionInfo": {
@@ -116,7 +116,7 @@
     "description": "Sponsor developer section title"
   },
   "sponsorMessage": {
-    "message": "FocusCut is a small tool I developed independently. I hope it helps you read more focused.\nIf you find it useful, consider buying me a coffee 💛",
+    "message": "FocusTint Reader is a small tool I developed independently. I hope it helps you read more focused.\nIf you find it useful, consider buying me a coffee 💛",
     "description": "Sponsor message for the developer"
   },
   "readingMaskTitle": {
@@ -164,6 +164,10 @@
     "message": "Solid Dark",
     "description": "Solid dark mask style"
   },
+  "darkerBlurGrayStyle": {
+    "message": "Darker Gray Blur",
+    "description": "Darker blur gray mask style"
+  },
   "lockPosition": {
     "message": "Pin to screen (currently scrolls with page)",
     "description": "Lock position tooltip"
@@ -197,7 +201,7 @@
     "description": "Instructions page title"
   },
   "aboutInfoTooltip": {
-    "message": "About FocusCut",
+    "message": "About FocusTint Reader",
     "description": "Tooltip for info button on instructions page"
   }
 } 

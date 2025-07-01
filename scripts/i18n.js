@@ -184,12 +184,7 @@
     readingMaskTitle.textContent = chrome.i18n.getMessage('readingMaskTitle');
   }
 
-
-
-  const toggleReadingMask = document.getElementById('toggle-reading-mask');
-  if (toggleReadingMask) {
-    toggleReadingMask.textContent = chrome.i18n.getMessage('enableReadingMask');
-  }
+  // toggle-reading-mask 現在是checkbox，不需要設置文字
 
   // 遮色片樣式標籤
   const maskStyleLabel = document.getElementById('mask-style-label');
@@ -219,6 +214,9 @@
             break;
           case 'solid-dark': 
             messageKey = 'solidDarkStyle'; 
+            break;
+          case 'darker-blur-gray': 
+            messageKey = 'darkerBlurGrayStyle'; 
             break;
         }
         
@@ -293,10 +291,10 @@
     // 部分標題
     updateElement('reading-card-title', 'readingCardTitle', 'Reading Card');
     updateElement('note-title', 'noteTitle', 'Note');
+    updateElement('highlighter-title', 'highlighterTitle', 'Highlighter Box');
     
     // 按鈕
-    updateElement('addBlock', 'addReadingCard', 'Add Reading Card');
-    updateElement('addNote', 'addNote', 'Add Note');
+    // addBlock 和 addNote 按鈕保持為 + icon，不設置文字
     
     // popup頁面不再有使用說明
     

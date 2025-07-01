@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "FocusCut",
+    "message": "FocusTint Reader",
     "description": "Extension name"
   },
   "extDescription": {
@@ -16,7 +16,7 @@
     "description": "Button text for adding a divider"
   },
   "readingCardTitle": {
-    "message": "透明阅读色卡",
+    "message": "阅读色卡",
     "description": "Title for reading card section"
   },
   "addReadingCard": {
@@ -60,7 +60,7 @@
     "description": "Instruction about auto-saving"
   },
   "errorUnsupported": {
-    "message": "FocusCut 无法在此页面上运作。",
+    "message": "FocusTint Reader 无法在此页面上运作。",
     "description": "Error message for unsupported pages"
   },
   "errorUseOnRegular": {
@@ -72,7 +72,7 @@
     "description": "Copyright page title"
   },
   "aboutLink": {
-    "message": "关于 FocusCut",
+    "message": "关于 FocusTint Reader",
     "description": "Link text to about page"
   },
   "versionInfo": {
@@ -116,7 +116,7 @@
     "description": "Sponsor developer section title"
   },
   "sponsorMessage": {
-    "message": "FocusCut 是我独立开发的小工具，希望它能帮助你更专注地阅读。\n如果你觉得好用，可以考虑请我喝杯咖啡 💛",
+    "message": "FocusTint Reader 是我独立开发的小工具，希望它能帮助你更专注地阅读。\n如果你觉得好用，可以考虑请我喝杯咖啡 💛",
     "description": "Sponsor message for the developer"
   },
   "readingMaskTitle": {
@@ -163,6 +163,10 @@
     "message": "深色纯色",
     "description": "Solid dark mask style"
   },
+  "darkerBlurGrayStyle": {
+    "message": "更深灰模糊",
+    "description": "Darker blur gray mask style"
+  },
   "lockPosition": {
     "message": "固定在屏幕上 (当前会跟随页面滚动)",
     "description": "Lock position tooltip"
@@ -196,7 +200,7 @@
     "description": "Instructions page title"
   },
   "aboutInfoTooltip": {
-    "message": "关于 FocusCut",
+    "message": "关于 FocusTint Reader",
     "description": "Tooltip for info button on instructions page"
   }
 } 
