@@ -4,7 +4,7 @@
   <img src="banner/FocusCut.png" alt="FocusCut Banner" width="600">
 </div>
 
-FocusCut 是一個專為提升閱讀和學習體驗而設計的 Chrome 擴展。它允許用戶在網頁上創建視覺輔助工具，包括分隔線、閱讀色卡和便利貼，幫助改善專注力和資訊整理。
+FocusOverlay 是一個專為提升閱讀和學習體驗而設計的 Chrome 擴展。它允許用戶在網頁上創建視覺輔助工具，包括分隔線、閱讀色卡和便利貼，幫助改善專注力和資訊整理。
 
 
 ## 功能特色
@@ -29,7 +29,7 @@ FocusCut 是一個專為提升閱讀和學習體驗而設計的 Chrome 擴展。
 
 ## 使用方法
 
-1. 點擊瀏覽器工具欄中的 FocusCut 圖標
+1. 點擊瀏覽器工具欄中的 FocusOverlay 圖標
 2. 從彈出窗口中選擇要添加的元素類型和顏色
 3. 元素會自動添加到當前頁面
 4. 拖拽調整元素位置，或使用右下角的調整手柄改變元素大小
@@ -38,7 +38,7 @@ FocusCut 是一個專為提升閱讀和學習體驗而設計的 Chrome 擴展。
 
 ## 隱私政策
 
-FocusCut 尊重您的隱私:
+FocusOverlay 尊重您的隱私:
 - 不收集任何個人資訊
 - 不追蹤您的瀏覽活動
 - 所有數據僅存儲在本地，不會上傳到任何伺服器
@@ -81,7 +81,7 @@ FocusCut 尊重您的隱私:
 
 ## How to Use
 
-1. Click the FocusCut icon in the browser toolbar
+1. Click the FocusOverlay icon in the browser toolbar
 2. Select the type of element and color from the popup
 3. The element will be automatically added to the current page
 4. Drag to adjust element position, or use the handle in the bottom-right corner to resize
@@ -90,7 +90,7 @@ FocusCut 尊重您的隱私:
 
 ## Privacy Policy
 
-FocusCut respects your privacy:
+FocusOverlay respects your privacy:
 - Does not collect any personal information
 - Does not track your browsing activity
 - All data is stored locally and is not uploaded to any servers
