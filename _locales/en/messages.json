@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "FocusTint Reader",
+    "message": "FocusOverlay",
     "description": "Extension name"
   },
   "extDescription": {
@@ -60,7 +60,7 @@
     "description": "Instruction about auto-saving"
   },
   "errorUnsupported": {
-    "message": "FocusTint Reader cannot work on this page.",
+    "message": "FocusOverlay cannot work on this page.",
     "description": "Error message for unsupported pages"
   },
   "errorUseOnRegular": {
@@ -72,7 +72,7 @@
     "description": "Copyright page title"
   },
   "aboutLink": {
-    "message": "About FocusTint Reader",
+    "message": "About FocusOverlay",
     "description": "Link text to about page"
   },
   "versionInfo": {
@@ -116,7 +116,7 @@
     "description": "Sponsor developer section title"
   },
   "sponsorMessage": {
-    "message": "FocusTint Reader is a small tool I developed independently. I hope it helps you read more focused.\nIf you find it useful, consider buying me a coffee 💛",
+    "message": "FocusOverlay is a small tool I developed independently. I hope it helps you read more focused.\nIf you find it useful, consider buying me a coffee 💛",
     "description": "Sponsor message for the developer"
   },
   "readingMaskTitle": {
@@ -177,7 +177,7 @@
     "description": "Unlock position tooltip"
   },
   "highlighterTitle": {
-    "message": "Highlighter",
+    "message": "Highlighter Box",
     "description": "Title for highlighter feature"
   },
   "enableHighlighter": {
@@ -201,7 +201,7 @@
     "description": "Instructions page title"
   },
   "aboutInfoTooltip": {
-    "message": "About FocusTint Reader",
+    "message": "About FocusOverlay",
     "description": "Tooltip for info button on instructions page"
   }
 } 
