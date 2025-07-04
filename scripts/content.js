@@ -1,41 +1,85 @@
+/**
+ * FocusOverlay Content Script
+ * ===========================
+ * 
+ * 主要功能：
+ * - 透明閱讀色卡：幫助聚焦閱讀區域
+ * - 遮色片：上下模糊遮罩，突出中間閱讀區域
+ * - 便利貼：可拖動的筆記功能
+ * - 螢光筆盒：文字高亮和橡皮擦功能
+ * 
+ * 作者：KXii
+ * 版本：v1.1
+ */
+
+// =============================================================================
 // 全局狀態管理
+// =============================================================================
+
+/**
+ * 擴展狀態管理對象
+ * 包含初始化狀態、元素存儲、螢光筆和橡皮擦狀態
+ */
 const state = {
-  isInitialized: false,
-  isExtensionValid: false,
-  initRetryCount: 0,
-  currentUrl: window.location.href,
+  isInitialized: false,                          // 是否已初始化
+  isExtensionValid: false,                       // 擴展是否有效
+  initRetryCount: 0,                             // 初始化重試次數
+  currentUrl: window.location.href,              // 當前頁面URL
+  
+  // 頁面元素狀態
   elements: {
-    dividers: [],
-    blocks: [],
-    notes: [],
-    highlights: [],
-    readingMask: null // 新增遮色片狀態
+    dividers: [],                                // 分隔線陣列
+    blocks: [],                                  // 色卡陣列
+    notes: [],                                   // 便利貼陣列
+    highlights: [],                              // 高亮標記陣列
+    readingMask: null,                           // 遮色片狀態
+    highlighterBox: null                         // 螢光筆盒狀態
   },
+  
+  // 螢光筆狀態
   highlighter: {
-    isActive: false,
-    color: '#ffff00'  // 預設黃色
+    isActive: false,                             // 是否啟用
+    color: '#ffff00'                             // 預設黃色
   },
+  
+  // 橡皮擦狀態
   eraser: {
-    isActive: false,
-    isDragging: false
+    isActive: false,                             // 是否啟用
+    isDragging: false                            // 是否正在拖動
   }
 };
 
+/**
+ * 配置常數
+ */
 const config = {
-  MAX_RETRIES: 5,
-  RETRY_DELAY: 1000,
-  STORAGE_PREFIX: 'focuscut_',
-  EXTENSION_CHECK_INTERVAL: 500
+  MAX_RETRIES: 5,                                // 最大重試次數
+  RETRY_DELAY: 1000,                             // 重試延遲（毫秒）
+  STORAGE_PREFIX: 'focuscut_',                   // 存儲前綴
+  EXTENSION_CHECK_INTERVAL: 500                  // 擴展檢查間隔（毫秒）
 };
 
-// 遮色片功能 - 修改為上下兩片
-let readingMaskTop = null;
-let readingMaskBottom = null;
-let readingMaskControls = null;
-let isMaskActive = false;
-let topMaskHeight = window.innerHeight * 0.3; // 初始上方遮色片高度，佔螢幕30%
-let bottomMaskHeight = window.innerHeight * 0.3; // 初始下方遮色片高度，佔螢幕30%
+// =============================================================================
+// 遮色片全局變數
+// =============================================================================
 
+let readingMaskTop = null;                       // 上方遮色片元素
+let readingMaskBottom = null;                    // 下方遮色片元素
+let readingMaskControls = null;                  // 遮色片控制面板
+let isMaskActive = false;                        // 遮色片是否啟用
+let isHighlighterBoxVisible = false;             // 螢光筆盒是否顯示
+
+// 遮色片高度（相對於視窗高度）
+let topMaskHeight = window.innerHeight * 0.3;     // 上方遮色片高度（30%）
+let bottomMaskHeight = window.innerHeight * 0.3;  // 下方遮色片高度（30%）
+
+// =============================================================================
+// 遮色片功能
+// =============================================================================
+
+/**
+ * 切換遮色片顯示/隱藏
+ */
 function toggleReadingMask() {
   if (isMaskActive) {
     removeReadingMask();
@@ -48,8 +92,11 @@ function toggleReadingMask() {
   }
 }
 
+/**
+ * 創建基本遮色片（舊版函數，保留相容性）
+ */
 function createReadingMask() {
-  // 先檢查是否已經存在遮色片，避免重複創建
+  // 檢查是否已存在遮色片，避免重複創建
   if (document.querySelector('.focuscut-reading-mask-top') || 
       document.querySelector('.focuscut-reading-mask-bottom')) {
     console.log('FocusCut: Reading mask already exists, removing first');
@@ -62,13 +109,13 @@ function createReadingMask() {
     // 創建上方遮色片
     readingMaskTop = document.createElement('div');
     readingMaskTop.className = 'focuscut-reading-mask-top';
-    readingMaskTop.style.height = topMaskHeight + 'px'; // 使用變量
-    readingMaskTop.style.zIndex = '20000'; // 確保足夠高的z-index
-    readingMaskTop.style.backgroundColor = 'rgba(120, 120, 120, 0.4)'; // 灰色半透明
-    readingMaskTop.style.backdropFilter = 'blur(4px)'; // 模糊背景，更聚焦
-    readingMaskTop.style.WebkitBackdropFilter = 'blur(4px)'; // Safari 支持
+    readingMaskTop.style.height = topMaskHeight + 'px';
+    readingMaskTop.style.zIndex = '20000';
+    readingMaskTop.style.backgroundColor = 'rgba(120, 120, 120, 0.4)';
+    readingMaskTop.style.backdropFilter = 'blur(4px)';
+    readingMaskTop.style.WebkitBackdropFilter = 'blur(4px)';
     
-    // 添加上方遮色片的下邊框調整區
+    // 添加上方遮色片的調整區域
     const topEdge = document.createElement('div');
     topEdge.className = 'focuscut-reading-mask-edge focuscut-reading-mask-edge-bottom';
     topEdge.title = chrome.i18n.getMessage('dragToAdjustMask') || '拖曳調整遮色片高度';
@@ -82,13 +129,13 @@ function createReadingMask() {
     // 創建下方遮色片
     readingMaskBottom = document.createElement('div');
     readingMaskBottom.className = 'focuscut-reading-mask-bottom';
-    readingMaskBottom.style.height = bottomMaskHeight + 'px'; // 使用變量
-    readingMaskBottom.style.zIndex = '20000'; // 確保足夠高的z-index
-    readingMaskBottom.style.backgroundColor = 'rgba(120, 120, 120, 0.4)'; // 灰色半透明
-    readingMaskBottom.style.backdropFilter = 'blur(4px)'; // 模糊背景，更聚焦
-    readingMaskBottom.style.WebkitBackdropFilter = 'blur(4px)'; // Safari 支持
+    readingMaskBottom.style.height = bottomMaskHeight + 'px';
+    readingMaskBottom.style.zIndex = '20000';
+    readingMaskBottom.style.backgroundColor = 'rgba(120, 120, 120, 0.4)';
+    readingMaskBottom.style.backdropFilter = 'blur(4px)';
+    readingMaskBottom.style.WebkitBackdropFilter = 'blur(4px)';
     
-    // 添加下方遮色片的上邊框調整區
+    // 添加下方遮色片的調整區域
     const bottomEdge = document.createElement('div');
     bottomEdge.className = 'focuscut-reading-mask-edge focuscut-reading-mask-edge-top';
     bottomEdge.title = chrome.i18n.getMessage('dragToAdjustMask') || '拖曳調整遮色片高度';
@@ -99,17 +146,16 @@ function createReadingMask() {
     });
     readingMaskBottom.appendChild(bottomEdge);
     
-    // 創建控制按鈕
+    // 創建控制面板
     readingMaskControls = document.createElement('div');
     readingMaskControls.className = 'focuscut-reading-mask-controls';
-    readingMaskControls.style.zIndex = '20001'; // 確保控制面板在最上層
+    readingMaskControls.style.zIndex = '20001';
     
-    // 新增關閉按鈕
+    // 關閉按鈕
     const closeButton = document.createElement('button');
     closeButton.className = 'focuscut-close-button';
     closeButton.title = chrome.i18n.getMessage('closeReadingMask') || '關閉遮色片';
     
-    // 創建關閉圖示
     const closeIcon = document.createElement('span');
     closeIcon.className = 'focuscut-close-icon';
     closeButton.appendChild(closeIcon);
@@ -122,14 +168,14 @@ function createReadingMask() {
     
     readingMaskControls.appendChild(closeButton);
     
-    // 添加到頁面
+    // 添加元素到頁面
     document.body.appendChild(readingMaskTop);
     document.body.appendChild(readingMaskBottom);
     document.body.appendChild(readingMaskControls);
     
     console.log('FocusCut: Mask elements added to the DOM');
     
-    // 只添加滾動和調整視窗大小的事件
+    // 添加事件監聽器
     window.addEventListener('scroll', positionMasks);
     window.addEventListener('resize', handleResize);
     
@@ -139,9 +185,10 @@ function createReadingMask() {
   }
 }
 
-// 處理窗口大小變化
+/**
+ * 處理視窗大小變化，保持遮色片比例
+ */
 function handleResize() {
-  // 保持遮色片的相對比例
   const viewportHeight = window.innerHeight;
   const topRatio = topMaskHeight / viewportHeight;
   const bottomRatio = bottomMaskHeight / viewportHeight;
@@ -152,20 +199,26 @@ function handleResize() {
   positionMasks();
 }
 
+/**
+ * 重新定位遮色片
+ */
 function positionMasks() {
   if (!readingMaskTop || !readingMaskBottom) {
     console.error('FocusCut: Mask elements not found');
     return;
   }
   
-  // 直接設置高度
   readingMaskTop.style.height = topMaskHeight + 'px';
   readingMaskBottom.style.height = bottomMaskHeight + 'px';
 }
 
+/**
+ * 移除遮色片
+ */
 function removeReadingMask() {
   console.log('FocusCut: Removing reading mask');
   
+  // 移除DOM元素
   if (readingMaskTop) {
     document.body.removeChild(readingMaskTop);
     readingMaskTop = null;
@@ -185,12 +238,11 @@ function removeReadingMask() {
   window.removeEventListener('scroll', positionMasks);
   window.removeEventListener('resize', handleResize);
   
+  // 更新狀態
   isMaskActive = false;
-  
-  // 清除遮色片狀態
   state.elements.readingMask = null;
   
-  // 保存到存儲
+  // 保存狀態
   if (state.isInitialized) {
     saveElements();
   }
@@ -198,49 +250,65 @@ function removeReadingMask() {
   console.log('FocusCut: Reading mask removed and state cleared');
 }
 
-// 通知背景腳本，內容腳本已載入，並啟動初始化
-try {
-  // 確保 DOM 已經載入
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      initializeExtension();
-    });
-  } else {
-    // DOM 已經載入，立即初始化
-    setTimeout(() => {
-      initializeExtension();
-    }, 100);
-  }
-  
-  // 嘗試通知背景腳本
-  chrome.runtime.sendMessage({ action: 'contentScriptLoaded', url: window.location.href });
-} catch (error) {
-  console.warn('FocusCut: Failed to send initial message:', error);
-  // 即使發送初始消息失敗，仍然嘗試初始化
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      initializeExtension();
-    });
-  } else {
-    setTimeout(() => {
-      initializeExtension();
-    }, 100);
-  }
-}
+// =============================================================================
+// 初始化和生命週期管理
+// =============================================================================
 
-// 安全的 Chrome API 調用包裝器
+/**
+ * 擴展初始化入口點
+ * 確保 DOM 載入後啟動初始化，並通知背景腳本
+ */
+(function initializeContentScript() {
+  try {
+    // 確保 DOM 已載入
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        initializeExtension();
+      });
+    } else {
+      // DOM 已載入，延遲初始化避免衝突
+      setTimeout(() => {
+        initializeExtension();
+      }, 100);
+    }
+    
+    // 嘗試通知背景腳本內容腳本已載入
+    chrome.runtime.sendMessage({ 
+      action: 'contentScriptLoaded', 
+      url: window.location.href 
+    });
+  } catch (error) {
+    console.warn('FocusCut: Failed to send initial message:', error);
+    
+    // 即使通知失敗也要初始化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        initializeExtension();
+      });
+    } else {
+      setTimeout(() => {
+        initializeExtension();
+      }, 100);
+    }
+  }
+})();
+
+/**
+ * 安全的 Chrome API 調用包裝器
+ * 防止擴展上下文無效時的錯誤
+ * @param {Function} operation - 要執行的操作
+ * @returns {Promise} - 包裝後的 Promise
+ */
 async function safeChromeCall(operation) {
   return new Promise((resolve) => {
-    // 檢查擴展上下文
+    // 檢查擴展上下文是否有效
     if (!chrome?.runtime?.id) {
-      // 不記錄任何錯誤
       resolve(null);
       return;
     }
 
-    // 檢查 storage API
+    // 檢查 storage API 是否可用
     if (!chrome?.storage?.local) {
-      // 不記錄任何錯誤
       resolve(null);
       return;
     }
@@ -248,20 +316,21 @@ async function safeChromeCall(operation) {
     try {
       operation((result) => {
         if (chrome.runtime.lastError) {
-          // 不記錄 Chrome 錯誤
           resolve(null);
         } else {
           resolve(result);
         }
       });
     } catch (error) {
-      // 不記錄操作錯誤
       resolve(null);
     }
   });
 }
 
-// 初始化檢查和重試機制
+/**
+ * 主要初始化函數
+ * 處理擴展的完整初始化流程，包含重試機制
+ */
 async function initializeExtension() {
   // 防止重複初始化
   if (state.isInitialized) {
@@ -272,9 +341,10 @@ async function initializeExtension() {
   console.log('FocusCut: Starting initialization...');
   
   try {
-    // 檢查擴展上下文
+    // 檢查擴展上下文有效性
     state.isExtensionValid = await checkExtensionContext();
 
+    // 處理擴展上下文無效的情況
     if (!state.isExtensionValid) {
       if (state.initRetryCount < config.MAX_RETRIES) {
         console.log(`FocusCut: Retrying initialization (${state.initRetryCount + 1}/${config.MAX_RETRIES})`);
@@ -282,32 +352,23 @@ async function initializeExtension() {
         setTimeout(initializeExtension, config.RETRY_DELAY);
         return;
       }
-      // 在達到最大重試次數後，只使用 localStorage，不顯示錯誤
+      // 達到最大重試次數，使用回退模式
       console.log('FocusCut: Using fallback initialization with localStorage only');
     }
     
+    // 設置事件監聽器和載入保存的元素
     await setupEventListeners();
     await loadSavedElements();
+    
     state.isInitialized = true;
     console.log('FocusCut: Initialization completed successfully');
-    
-    // 創建螢光筆工具箱
-    createHighlighterToolbox();
-    
-    // 驗證螢光筆工具箱是否創建成功
-    const verifyPenBox = document.getElementById('focuscut-pen-box');
-    if (verifyPenBox) {
-      console.log('FocusCut: Highlighter toolbox verification successful');
-    } else {
-      console.warn('FocusCut: Highlighter toolbox creation failed during initialization');
-    }
     
   } catch (error) {
     console.warn('FocusCut: Initialization error, using fallback:', error);
     state.isExtensionValid = false;
     
     try {
-      // 靜默回退到僅使用 localStorage
+      // 回退到僅使用 localStorage
       await setupEventListeners();
       await loadSavedElements();
       state.isInitialized = true;
@@ -320,7 +381,10 @@ async function initializeExtension() {
   }
 }
 
-// 檢查擴展上下文
+/**
+ * 檢查擴展上下文是否有效
+ * @returns {Promise<boolean>} - 上下文是否有效
+ */
 async function checkExtensionContext() {
   try {
     const result = await safeChromeCall((callback) => {
@@ -332,27 +396,39 @@ async function checkExtensionContext() {
   }
 }
 
-// 設置事件監聽器
+/**
+ * 設置所有必要的事件監聽器
+ */
 async function setupEventListeners() {
-  // 直接添加消息監聽器，Chrome會自動處理重複監聽器
+  // 添加消息監聽器（Chrome 會自動處理重複監聽器）
   chrome.runtime.onMessage.addListener(handleMessage);
   
-  // 監聽頁面變化
+  // 監聽頁面生命週期事件
   window.addEventListener('beforeunload', handleBeforeUnload);
   window.addEventListener('popstate', handlePopState);
   
-  // 設置 URL 變化檢查
-  setInterval(checkUrlChange, 500);
+  // 設置 URL 變化檢查定時器
+  setInterval(checkUrlChange, config.EXTENSION_CHECK_INTERVAL);
 }
 
-// 消息處理
+// =============================================================================
+// 消息處理系統
+// =============================================================================
+
+/**
+ * 處理來自 popup 和背景腳本的消息
+ * @param {Object} request - 消息請求對象
+ * @param {Object} sender - 消息發送者信息
+ * @param {Function} sendResponse - 回應函數
+ * @returns {boolean} - 是否保持消息通道開放
+ */
 function handleMessage(request, sender, sendResponse) {
   try {
-    // 檢查message的合法性
+    // 驗證消息格式
     if (!request || typeof request !== 'object') {
       console.warn('FocusCut: Received invalid message');
       sendResponse({ status: 'error', message: 'Invalid message' });
-      return true; // 保持消息通道開放
+      return true;
     }
     
     console.log('FocusCut: Content script received message:', request.action);
@@ -426,24 +502,39 @@ function handleMessage(request, sender, sendResponse) {
         break;
       
       case 'toggleHighlighterBox':
-        let penBox = document.getElementById('focuscut-pen-box');
-        if (penBox) {
-          // 檢查當前顯示狀態
-          const currentDisplay = window.getComputedStyle(penBox).display;
-          const isVisible = currentDisplay !== 'none';
-          console.log('FocusCut: Toggling highlighter box, current visible:', isVisible);
-          
-          // 切換顯示/隱藏
-          penBox.style.display = isVisible ? 'none' : 'flex';
-          sendResponse({ status: 'success', isVisible: !isVisible });
-        } else {
-          // 如果不存在就創建
-          console.log('FocusCut: Creating new highlighter box');
-          createHighlighterToolbox();
-          // 再次檢查是否創建成功
-          penBox = document.getElementById('focuscut-pen-box');
+        if (isHighlighterBoxVisible) {
+          // 如果當前顯示，就隱藏
+          console.log('FocusCut: Hiding highlighter box');
+          const penBox = document.getElementById('focuscut-pen-box');
           if (penBox) {
-            console.log('FocusCut: Highlighter box created successfully');
+            penBox.style.display = 'none';
+          }
+          isHighlighterBoxVisible = false;
+          
+          // 清除螢光筆盒狀態
+          state.elements.highlighterBox = null;
+          saveElements();
+          
+          sendResponse({ status: 'success', isVisible: false });
+        } else {
+          // 如果當前隱藏，就顯示
+          console.log('FocusCut: Showing highlighter box');
+          let penBox = document.getElementById('focuscut-pen-box');
+          if (!penBox) {
+            // 如果不存在就創建
+            createHighlighterToolbox();
+            penBox = document.getElementById('focuscut-pen-box');
+          }
+          if (penBox) {
+            penBox.style.display = 'flex';
+            isHighlighterBoxVisible = true;
+            
+            // 保存螢光筆盒狀態
+            state.elements.highlighterBox = {
+              isVisible: true
+            };
+            saveElements();
+            
             sendResponse({ status: 'success', isVisible: true });
           } else {
             console.error('FocusCut: Failed to create highlighter box');
@@ -453,16 +544,8 @@ function handleMessage(request, sender, sendResponse) {
         break;
       
       case 'checkHighlighterBoxStatus':
-        const existingPenBox = document.getElementById('focuscut-pen-box');
-        if (existingPenBox) {
-          const computedDisplay = window.getComputedStyle(existingPenBox).display;
-          const isBoxVisible = computedDisplay !== 'none';
-          console.log('FocusCut: Checking highlighter box status, visible:', isBoxVisible);
-          sendResponse({ status: 'success', isVisible: isBoxVisible });
-        } else {
-          console.log('FocusCut: Highlighter box does not exist');
-          sendResponse({ status: 'success', isVisible: false });
-        }
+        console.log('FocusCut: Checking highlighter box status, visible:', isHighlighterBoxVisible);
+        sendResponse({ status: 'success', isVisible: isHighlighterBoxVisible });
         break;
       
       default:
@@ -810,7 +893,8 @@ async function loadSavedElements() {
       blocks: Array.isArray(data.blocks) ? data.blocks : [],
       notes: Array.isArray(data.notes) ? data.notes : [],
       highlights: Array.isArray(data.highlights) ? data.highlights : [],
-      readingMask: data.readingMask || null
+      readingMask: data.readingMask || null,
+      highlighterBox: data.highlighterBox || null
     };
     await createElementsFromData(state.elements);
   } else {
@@ -830,7 +914,8 @@ async function createElementsFromLocalData(pageKey) {
         blocks: Array.isArray(data.blocks) ? data.blocks : [],
         notes: Array.isArray(data.notes) ? data.notes : [],
         highlights: Array.isArray(data.highlights) ? data.highlights : [],
-        readingMask: data.readingMask || null
+        readingMask: data.readingMask || null,
+        highlighterBox: data.highlighterBox || null
       };
       createElementsFromData(state.elements);
     } else {
@@ -926,6 +1011,28 @@ async function createElementsFromData(elementsData) {
       }
     }
     
+    // 新增: 恢復螢光筆盒
+    if (elementsData.highlighterBox && elementsData.highlighterBox.isVisible) {
+      try {
+        console.log('FocusCut: Restoring highlighter box');
+        
+        // 創建螢光筆盒
+        let penBox = document.getElementById('focuscut-pen-box');
+        if (!penBox) {
+          createHighlighterToolbox();
+          penBox = document.getElementById('focuscut-pen-box');
+        }
+        
+        if (penBox) {
+          penBox.style.display = 'flex';
+          isHighlighterBoxVisible = true;
+          console.log('FocusCut: Highlighter box restored successfully');
+        }
+      } catch (highlighterError) {
+        console.error('FocusCut: Error restoring highlighter box:', highlighterError);
+      }
+    }
+    
     console.log('FocusCut: Successfully created elements');
   } catch (error) {
     console.error('FocusCut: Error creating elements:', error);
@@ -956,7 +1063,8 @@ function resetElements() {
     blocks: [],
     notes: [],
     highlights: [],
-    readingMask: null
+    readingMask: null,
+    highlighterBox: null
   };
   
   // 移除頁面上的所有元素
@@ -967,6 +1075,12 @@ function resetElements() {
   if (penBox) {
     penBox.remove();
   }
+  
+  // 重置螢光筆盒狀態
+  isHighlighterBoxVisible = false;
+  
+  // 重置遮色片狀態
+  isMaskActive = false;
   
   console.log('FocusCut: Reset completed');
 }
@@ -1862,7 +1976,7 @@ function createHighlighterToolbox() {
   
   const penBox = document.createElement('div');
   penBox.id = 'focuscut-pen-box';
-  penBox.style.display = 'flex'; // 確保可見
+  penBox.style.display = 'none'; // 默認隱藏，等待用戶主動開啟
   
   // 添加隱形觸發區域（右上角）
   const closeTrigger = document.createElement('div');
@@ -1893,8 +2007,13 @@ function createHighlighterToolbox() {
       disableEraser();
     }
     
-    // 隱藏螢光筆盒
+    // 隱藏螢光筆盒並更新狀態
     penBox.style.display = 'none';
+    isHighlighterBoxVisible = false;
+    
+    // 清除螢光筆盒狀態
+    state.elements.highlighterBox = null;
+    saveElements();
   });
   
   penBox.appendChild(closeButton);

@@ -1,12 +1,28 @@
 /**
- * FocusCut - 多語言國際化處理庫
- * 安全版本：使用延遲操作、備用值和捕獲所有可能的錯誤
+ * FocusOverlay Internationalization (i18n) Script
+ * ================================================
+ * 
+ * 功能說明：
+ * - 處理多語言國際化文本
+ * - 安全地使用 Chrome 擴展 API
+ * - 動態更新頁面元素文本
+ * - 支援回退機制防止錯誤
+ * 
+ * 作者：KXii
+ * 版本：v1.1
  */
 
 (function() {
-  // 避免全局變量污染
-  
-  // 安全地獲取語言代碼
+  'use strict';
+
+  // =============================================================================
+  // 核心功能函數
+  // =============================================================================
+
+  /**
+   * 安全地獲取語言代碼
+   * @returns {string} 語言代碼
+   */
   function getLanguage() {
     try {
       // 嘗試獲取 Chrome API 語言
@@ -27,8 +43,13 @@
     // 默認語言
     return 'en';
   }
-  
-  // 安全地獲取翻譯
+
+  /**
+   * 安全地獲取翻譯文本
+   * @param {string} key - 翻譯鍵值
+   * @param {string} defaultText - 默認文本
+   * @returns {string} 翻譯後的文本
+   */
   function getMessage(key, defaultText) {
     try {
       // 優先使用 Chrome 擴展 API
@@ -45,11 +66,21 @@
     // 如果 Chrome API 失敗，返回默認文本
     return defaultText || key;
   }
-  
-  // 安全地更新頁面元素
+
+  // =============================================================================
+  // DOM 更新函數
+  // =============================================================================
+
+  /**
+   * 安全地更新頁面元素文本
+   * @param {string} elementId - 元素 ID
+   * @param {string} messageKey - 翻譯鍵值
+   * @param {string} defaultText - 默認文本
+   * @param {string} suffix - 後綴文本
+   */
   function updateElement(elementId, messageKey, defaultText, suffix) {
     try {
-      // 延遲操作，確保DOM已加載
+      // 延遲操作，確保DOM已載入
       setTimeout(function() {
         try {
           const element = document.getElementById(elementId);
@@ -71,8 +102,12 @@
       console.debug('Error in updateElement:', e);
     }
   }
-  
-  // 安全地更新 HTML 內容
+
+  /**
+   * 安全地更新 HTML 內容
+   * @param {string} elementId - 元素 ID
+   * @param {string} htmlContent - HTML 內容
+   */
   function updateHTML(elementId, htmlContent) {
     try {
       setTimeout(function() {
@@ -91,8 +126,14 @@
       console.debug('Error in updateHTML:', e);
     }
   }
-  
-  // 安全地設置屬性
+
+  /**
+   * 安全地設置元素屬性
+   * @param {string} elementId - 元素 ID
+   * @param {string} attribute - 屬性名稱
+   * @param {string} messageKey - 翻譯鍵值
+   * @param {string} defaultText - 默認文本
+   */
   function updateAttribute(elementId, attribute, messageKey, defaultText) {
     try {
       setTimeout(function() {
@@ -112,8 +153,14 @@
       console.debug('Error in updateAttribute:', e);
     }
   }
-  
-  // 安全地處理 GitHub 連結
+
+  // =============================================================================
+  // 特殊功能更新函數
+  // =============================================================================
+
+  /**
+   * 安全地處理 GitHub 連結
+   */
   function updateRepoLink() {
     try {
       setTimeout(function() {
@@ -135,8 +182,10 @@
       console.debug('Error in updateRepoLink:', e);
     }
   }
-  
-  // 檢查並設置 Buy Me a Coffee 連結的文本
+
+  /**
+   * 檢查並設置 Buy Me a Coffee 連結的文本
+   */
   function updateCoffeeLink() {
     try {
       setTimeout(function() {
@@ -177,79 +226,63 @@
       console.debug('Error in updateCoffeeLink:', e);
     }
   }
-  
-  // 遮色片功能
-  const readingMaskTitle = document.getElementById('reading-mask-title');
-  if (readingMaskTitle) {
-    readingMaskTitle.textContent = chrome.i18n.getMessage('readingMaskTitle');
-  }
 
-  // toggle-reading-mask 現在是checkbox，不需要設置文字
-
-  // 遮色片樣式標籤
-  const maskStyleLabel = document.getElementById('mask-style-label');
-  if (maskStyleLabel) {
-    maskStyleLabel.textContent = chrome.i18n.getMessage('maskStyleLabel');
-  }
-
-  // 遮色片樣式選項
-  const styleOptions = document.querySelectorAll('.style-option');
-  if (styleOptions.length > 0) {
-    // 為每個樣式選項設置翻譯
-    styleOptions.forEach(option => {
-      const style = option.getAttribute('data-style');
-      const spanElement = option.querySelector('span');
-      
-      if (spanElement) {
-        let messageKey = '';
-        switch (style) {
-          case 'blur-gray': 
-            messageKey = 'blurGrayStyle'; 
-            break;
-          case 'blur-dark': 
-            messageKey = 'blurDarkStyle'; 
-            break;
-          case 'solid-gray': 
-            messageKey = 'solidGrayStyle'; 
-            break;
-          case 'solid-dark': 
-            messageKey = 'solidDarkStyle'; 
-            break;
-          case 'darker-blur-gray': 
-            messageKey = 'darkerBlurGrayStyle'; 
-            break;
-        }
-        
-        if (messageKey) {
-          spanElement.textContent = chrome.i18n.getMessage(messageKey);
-        }
-      }
-    });
-  }
-  
-  // 初始化所有頁面元素
-  function initializePage() {
+  /**
+   * 更新遮色片相關元素
+   */
+  function updateMaskElements() {
     try {
-      // 根據當前頁面 URL 決定要初始化哪些元素
-      const currentURL = window.location.href;
-      
-      // 檢測頁面類型
-      const isPopupPage = currentURL.includes('popup.html');
-      const isAboutPage = currentURL.includes('about.html');
-      
-      if (isAboutPage) {
-        // 初始化關於頁面
-        initializeAboutPage();
-      } else if (isPopupPage) {
-        // 初始化彈出窗口
-        initializePopupPage();
-      }
+      setTimeout(function() {
+        try {
+          // 遮色片標題
+          const readingMaskTitle = document.getElementById('reading-mask-title');
+          if (readingMaskTitle) {
+            readingMaskTitle.textContent = getMessage('readingMaskTitle', 'Reading Mask');
+          }
+
+          // 遮色片樣式標籤
+          const maskStyleLabel = document.getElementById('mask-style-label');
+          if (maskStyleLabel) {
+            maskStyleLabel.textContent = getMessage('maskStyleLabel', 'Style');
+          }
+
+          // 遮色片樣式選項
+          const styleOptions = document.querySelectorAll('.style-option');
+          styleOptions.forEach(option => {
+            const style = option.getAttribute('data-style');
+            const spanElement = option.querySelector('span');
+            
+            if (spanElement) {
+              const styleMessageMap = {
+                'blur-gray': 'blurGrayStyle',
+                'blur-dark': 'blurDarkStyle',
+                'solid-gray': 'solidGrayStyle',
+                'solid-dark': 'solidDarkStyle',
+                'darker-blur-gray': 'darkerBlurGrayStyle'
+              };
+              
+              const messageKey = styleMessageMap[style];
+              if (messageKey) {
+                spanElement.textContent = getMessage(messageKey, style);
+              }
+            }
+          });
+        } catch (innerError) {
+          console.debug('Failed to update mask elements:', innerError);
+        }
+      }, 0);
     } catch (e) {
-      console.debug('Failed to initialize page:', e);
+      console.debug('Error in updateMaskElements:', e);
     }
   }
-  
-  // 初始化關於頁面（現在是使用說明頁面）
+
+  // =============================================================================
+  // 頁面初始化函數
+  // =============================================================================
+
+  /**
+   * 初始化關於頁面（現在是使用說明頁面）
+   */
   function initializeAboutPage() {
     // 使用說明頁面標題
     updateElement('instructions-title', 'instructionsPageTitle', 'Instructions');
@@ -285,20 +318,20 @@
     // 贊助開發者區塊
     updateCoffeeLink();
   }
-  
-  // 初始化彈出窗口
+
+  /**
+   * 初始化彈出窗口
+   */
   function initializePopupPage() {
-    // 部分標題
+    // 功能標題
     updateElement('reading-card-title', 'readingCardTitle', 'Reading Card');
     updateElement('note-title', 'noteTitle', 'Note');
     updateElement('highlighter-title', 'highlighterTitle', 'Highlighter Box');
     
-    // 按鈕
-    // addBlock 和 addNote 按鈕保持為 + icon，不設置文字
+    // 遮色片相關元素
+    updateMaskElements();
     
-    // popup頁面不再有使用說明
-    
-    // 錯誤信息
+    // 錯誤訊息
     updateElement('error-message-1', 'errorUnsupported', 'Not supported on this page');
     updateElement('error-message-2', 'errorUseOnRegular', 'Please use on regular web pages');
     
@@ -309,23 +342,39 @@
       updateAttribute('copyright-link', 'title', 'aboutLink', 'About FocusCut');
     }
     
-    // TODO: 未來功能 - 顏色按鈕
-    /*
-    const customColorButtons = ['blockCustomColor', 'noteCustomColor'];
-    for (let i = 0; i < customColorButtons.length; i++) {
-      const button = document.getElementById(customColorButtons[i]);
-      if (button) {
-        button.innerHTML = '+';
-        updateAttribute(customColorButtons[i], 'title', 'customColor', 'Custom Color');
-      }
-    }
-    */
-    
-    // 檢查並設置 Buy Me a Coffee 連結的文本
+    // 贊助相關
     updateCoffeeLink();
   }
-  
-  // 當頁面準備就緒時初始化
+
+  /**
+   * 初始化所有頁面元素
+   */
+  function initializePage() {
+    try {
+      // 根據當前頁面 URL 決定要初始化哪些元素
+      const currentURL = window.location.href;
+      
+      // 檢測頁面類型
+      const isPopupPage = currentURL.includes('popup.html');
+      const isAboutPage = currentURL.includes('about.html');
+      
+      if (isAboutPage) {
+        initializeAboutPage();
+      } else if (isPopupPage) {
+        initializePopupPage();
+      }
+    } catch (e) {
+      console.debug('Failed to initialize page:', e);
+    }
+  }
+
+  // =============================================================================
+  // 初始化執行
+  // =============================================================================
+
+  /**
+   * 當頁面準備就緒時安全初始化
+   */
   function safeInit() {
     try {
       if (document.readyState === 'loading') {
@@ -339,7 +388,7 @@
       console.debug('Safe init error:', e);
     }
   }
-  
+
   // 開始安全初始化
   safeInit();
 })(); 
