@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FocusCut SPA Test</title>
+  <style>
+    body { font-family: sans-serif; max-width: 760px; margin: 40px auto; line-height: 1.6; }
+    button { margin-right: 8px; padding: 8px 12px; }
+    #route-content { margin-top: 24px; padding: 20px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>FocusCut SPA Test</h1>
+  <button id="route-one" type="button">Route One</button>
+  <button id="route-two" type="button">Route Two</button>
+  <div id="route-content"></div>
+
+  <script>
+    const content = document.getElementById('route-content');
+
+    function render() {
+      const route = new URL(location.href).searchParams.get('route') || 'home';
+      content.textContent = `Current route: ${route}`;
+    }
+
+    document.getElementById('route-one').addEventListener('click', () => {
+      history.pushState({}, '', '?route=one');
+      render();
+    });
+
+    document.getElementById('route-two').addEventListener('click', () => {
+      history.pushState({}, '', '?route=two');
+      render();
+    });
+
+    window.addEventListener('popstate', render);
+    render();
+  </script>
+</body>
+</html>

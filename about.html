@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <title>FocusCut 使用說明</title>
@@ -323,11 +323,11 @@
     <!-- 操作說明 -->
     <div class="general-tips">
       <ul class="operation-list">
-        <li><strong>拖動移動：</strong>按住拖曳卡片調整位置</li>
-        <li><strong>調整大小：</strong>拖曳角落圓點改變卡片尺寸</li>
-        <li><strong>刪除卡片：</strong>滑鼠停留後，點擊右上角 ×</li>
-        <li><strong>鎖定功能：</strong>點鎖頭圖示將卡片固定在螢幕</li>
-        <li><strong>自動保存：</strong>所有變更會自動儲存，重新整理後仍保留</li>
+        <li id="instruction-drag"><strong>拖動移動：</strong>按住拖曳卡片調整位置</li>
+        <li id="instruction-resize"><strong>調整大小：</strong>拖曳角落圓點改變卡片尺寸</li>
+        <li id="instruction-delete"><strong>刪除卡片：</strong>滑鼠停留後，點擊右上角 ×</li>
+        <li id="instruction-lock"><strong>鎖定功能：</strong>點鎖頭圖示將卡片固定在螢幕</li>
+        <li id="instruction-auto-save"><strong>自動保存：</strong>所有變更會自動儲存，重新整理後仍保留</li>
       </ul>
     </div>
     
@@ -339,7 +339,7 @@
   <div class="version-info">
     <p>
       FocusOverlay v1.1<br>
-      專注閱讀體驗 ・ 視覺輔助<br>
+      <span id="about-tagline">專注閱讀體驗 ・ 視覺輔助</span><br>
       <span style="color: #d1d5db; font-size: 12px; margin: 8px 0 4px 0; display: block;">―――――</span>
       <span id="coffee-btn" class="coffee-btn">☕</span>
     </p>
@@ -352,4 +352,4 @@
   <script src="scripts/i18n.js"></script>
   <script src="scripts/about.js"></script>
 </body>
-</html> 
+</html>

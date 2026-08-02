@@ -38,6 +38,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // 咖啡贊助功能
 // =============================================================================
 
+function getLocalizedMessage(key, fallback) {
+  try {
+    return chrome.i18n.getMessage(key) || fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
 /**
  * 設置咖啡贊助按鈕的互動功能
  * @param {HTMLElement} coffeeBtn - 咖啡按鈕元素
@@ -81,7 +89,11 @@ function createThankYouMessage() {
     font-size: 12px;
     color: #6c757d;
   `;
-  thankText.innerHTML = '喜歡這個小工具嗎？<br>歡迎請我喝杯咖啡，感謝你的支持與鼓勵！';
+  thankText.style.whiteSpace = 'pre-line';
+  thankText.textContent = getLocalizedMessage(
+    'sponsorMessage',
+    'FocusCut is an independent project. If you find it useful, consider buying me a coffee 💛'
+  );
   
   // 創建贊助按鈕
   const donateBtn = document.createElement('a');
@@ -99,7 +111,7 @@ function createThankYouMessage() {
     transition: all 0.2s ease;
     border: 1px solid #ddd;
   `;
-  donateBtn.innerHTML = 'Buy Me a Coffee ↗';
+  donateBtn.textContent = `${getLocalizedMessage('buyMeCoffee', 'Buy Me a Coffee')} ↗`;
   
   // 添加按鈕懸停效果
   setupButtonHoverEffects(donateBtn);
@@ -186,4 +198,4 @@ function setupGlobalEventListeners(licenseModal) {
       }
     }
   });
-} 
+}

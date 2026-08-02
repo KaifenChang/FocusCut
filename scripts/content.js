@@ -22,7 +22,11 @@
  */
 const state = {
   isInitialized: false,                          // 是否已初始化
+  isInitializing: false,                        // 是否正在初始化
   isExtensionValid: false,                       // 擴展是否有效
+  isRestoring: false,                            // 是否正在從存儲恢復畫面
+  isClearing: false,                             // 是否正在清除目前頁面的資料
+  isNavigating: false,                           // 是否正在處理 SPA URL 變更
   initRetryCount: 0,                             // 初始化重試次數
   currentUrl: window.location.href,              // 當前頁面URL
   
@@ -48,6 +52,10 @@ const state = {
     isDragging: false                            // 是否正在拖動
   }
 };
+
+let eventListenersConfigured = false;            // 避免重複註冊監聽器
+let urlCheckIntervalId = null;                    // URL 輪詢計時器
+let storageWriteQueue = Promise.resolve();        // 保證儲存寫入順序
 
 /**
  * 配置常數
@@ -110,7 +118,6 @@ function createReadingMask() {
     readingMaskTop = document.createElement('div');
     readingMaskTop.className = 'focuscut-reading-mask-top';
     readingMaskTop.style.height = topMaskHeight + 'px';
-    readingMaskTop.style.zIndex = '20000';
     readingMaskTop.style.backgroundColor = 'rgba(120, 120, 120, 0.4)';
     readingMaskTop.style.backdropFilter = 'blur(4px)';
     readingMaskTop.style.WebkitBackdropFilter = 'blur(4px)';
@@ -130,7 +137,6 @@ function createReadingMask() {
     readingMaskBottom = document.createElement('div');
     readingMaskBottom.className = 'focuscut-reading-mask-bottom';
     readingMaskBottom.style.height = bottomMaskHeight + 'px';
-    readingMaskBottom.style.zIndex = '20000';
     readingMaskBottom.style.backgroundColor = 'rgba(120, 120, 120, 0.4)';
     readingMaskBottom.style.backdropFilter = 'blur(4px)';
     readingMaskBottom.style.WebkitBackdropFilter = 'blur(4px)';
@@ -149,7 +155,6 @@ function createReadingMask() {
     // 創建控制面板
     readingMaskControls = document.createElement('div');
     readingMaskControls.className = 'focuscut-reading-mask-controls';
-    readingMaskControls.style.zIndex = '20001';
     
     // 關閉按鈕
     const closeButton = document.createElement('button');
@@ -215,22 +220,22 @@ function positionMasks() {
 /**
  * 移除遮色片
  */
-function removeReadingMask() {
+function removeReadingMask(shouldSave = true) {
   console.log('FocusCut: Removing reading mask');
   
   // 移除DOM元素
   if (readingMaskTop) {
-    document.body.removeChild(readingMaskTop);
+    readingMaskTop.remove();
     readingMaskTop = null;
   }
   
   if (readingMaskBottom) {
-    document.body.removeChild(readingMaskBottom);
+    readingMaskBottom.remove();
     readingMaskBottom = null;
   }
   
   if (readingMaskControls) {
-    document.body.removeChild(readingMaskControls);
+    readingMaskControls.remove();
     readingMaskControls = null;
   }
   
@@ -243,7 +248,7 @@ function removeReadingMask() {
   state.elements.readingMask = null;
   
   // 保存狀態
-  if (state.isInitialized) {
+  if (shouldSave && state.isInitialized) {
     saveElements();
   }
   
@@ -332,12 +337,13 @@ async function safeChromeCall(operation) {
  * 處理擴展的完整初始化流程，包含重試機制
  */
 async function initializeExtension() {
-  // 防止重複初始化
-  if (state.isInitialized) {
-    console.log('FocusCut: Already initialized, skipping...');
+  // 防止 DOMContentLoaded 與檔案尾端的啟動呼叫同時初始化
+  if (state.isInitialized || state.isInitializing) {
+    console.log('FocusCut: Already initialized or initializing, skipping...');
     return;
   }
   
+  state.isInitializing = true;
   console.log('FocusCut: Starting initialization...');
   
   try {
@@ -352,8 +358,7 @@ async function initializeExtension() {
         setTimeout(initializeExtension, config.RETRY_DELAY);
         return;
       }
-      // 達到最大重試次數，使用回退模式
-      console.log('FocusCut: Using fallback initialization with localStorage only');
+      throw new Error('Chrome extension storage is unavailable');
     }
     
     // 設置事件監聽器和載入保存的元素
@@ -361,23 +366,15 @@ async function initializeExtension() {
     await loadSavedElements();
     
     state.isInitialized = true;
+    state.initRetryCount = 0;
     console.log('FocusCut: Initialization completed successfully');
     
   } catch (error) {
-    console.warn('FocusCut: Initialization error, using fallback:', error);
+    console.error('FocusCut: Initialization failed:', error);
     state.isExtensionValid = false;
-    
-    try {
-      // 回退到僅使用 localStorage
-      await setupEventListeners();
-      await loadSavedElements();
-      state.isInitialized = true;
-      console.log('FocusCut: Fallback initialization completed');
-    } catch (retryError) {
-      console.error('FocusCut: Fallback initialization failed:', retryError);
-      resetElements();
-      state.isInitialized = false;
-    }
+    state.isInitialized = false;
+  } finally {
+    state.isInitializing = false;
   }
 }
 
@@ -388,7 +385,7 @@ async function initializeExtension() {
 async function checkExtensionContext() {
   try {
     const result = await safeChromeCall((callback) => {
-      callback(true);
+      chrome.storage.local.get([], () => callback(true));
     });
     return result !== null;
   } catch (error) {
@@ -400,7 +397,11 @@ async function checkExtensionContext() {
  * 設置所有必要的事件監聽器
  */
 async function setupEventListeners() {
-  // 添加消息監聽器（Chrome 會自動處理重複監聽器）
+  if (eventListenersConfigured) {
+    return;
+  }
+
+  // 添加消息監聽器
   chrome.runtime.onMessage.addListener(handleMessage);
   
   // 監聽頁面生命週期事件
@@ -408,7 +409,8 @@ async function setupEventListeners() {
   window.addEventListener('popstate', handlePopState);
   
   // 設置 URL 變化檢查定時器
-  setInterval(checkUrlChange, config.EXTENSION_CHECK_INTERVAL);
+  urlCheckIntervalId = setInterval(checkUrlChange, config.EXTENSION_CHECK_INTERVAL);
+  eventListenersConfigured = true;
 }
 
 // =============================================================================
@@ -451,8 +453,12 @@ function handleMessage(request, sender, sendResponse) {
         break;
       
       case 'clearAll':
-        clearAllElements();
-        sendResponse({ status: 'success' });
+        clearAllUserElements()
+          .then(() => sendResponse({ status: 'success' }))
+          .catch(error => {
+            console.error('FocusCut: Failed to clear all elements:', error);
+            sendResponse({ status: 'error', message: error.message });
+          });
         break;
       
       case 'rescan':
@@ -467,6 +473,12 @@ function handleMessage(request, sender, sendResponse) {
         setTimeout(() => {
           initializeExtension();
         }, 100);
+        sendResponse({ status: 'success' });
+        break;
+
+      case 'pageUpdated':
+      case 'tabActivated':
+        handleUrlChange(request.url || window.location.href);
         sendResponse({ status: 'success' });
         break;
       
@@ -566,13 +578,12 @@ function createReadingMaskWithStyle(maskStyle) {
   console.log('FocusCut: Creating reading mask with style:', maskStyle);
   
   // 先移除現有的遮色片
-  removeReadingMask();
+  removeReadingMask(false);
   
   // 創建上遮色片
   readingMaskTop = document.createElement('div');
   readingMaskTop.className = 'focuscut-reading-mask-top';
   readingMaskTop.style.height = topMaskHeight + 'px'; // 使用變量
-  readingMaskTop.style.zIndex = '20000'; // 確保足夠高的z-index
   
   // 應用樣式
   readingMaskTop.style.backgroundColor = maskStyle.color || 'rgba(120, 120, 120, 0.4)';
@@ -596,7 +607,6 @@ function createReadingMaskWithStyle(maskStyle) {
   readingMaskBottom = document.createElement('div');
   readingMaskBottom.className = 'focuscut-reading-mask-bottom';
   readingMaskBottom.style.height = bottomMaskHeight + 'px'; // 使用變量
-  readingMaskBottom.style.zIndex = '20000'; // 確保足夠高的z-index
   
   // 應用樣式
   readingMaskBottom.style.backgroundColor = maskStyle.color || 'rgba(120, 120, 120, 0.4)';
@@ -619,7 +629,6 @@ function createReadingMaskWithStyle(maskStyle) {
   // 創建控制面板
   readingMaskControls = document.createElement('div');
   readingMaskControls.className = 'focuscut-reading-mask-controls';
-  readingMaskControls.style.zIndex = '20001'; // 確保控制面板在最上層
   
   // TODO: 未來功能 - 建立遮色片選色器
   // createMaskColorPicker(readingMaskControls, maskStyle);
@@ -802,129 +811,232 @@ function updateMaskStyle(newStyle) {
 }
 
 // 存儲操作
-async function saveElements() {
-  if (!state.isInitialized) {
+function createEmptyElementsState() {
+  return {
+    dividers: [],
+    blocks: [],
+    notes: [],
+    highlights: [],
+    readingMask: null,
+    highlighterBox: null
+  };
+}
+
+function normalizeElementsData(data) {
+  return {
+    dividers: Array.isArray(data?.dividers) ? data.dividers : [],
+    blocks: Array.isArray(data?.blocks) ? data.blocks : [],
+    notes: Array.isArray(data?.notes) ? data.notes : [],
+    highlights: Array.isArray(data?.highlights) ? data.highlights : [],
+    readingMask: data?.readingMask || null,
+    highlighterBox: data?.highlighterBox || null
+  };
+}
+
+function getPageStorageKey(pageKey) {
+  return `${config.STORAGE_PREFIX}${pageKey}`;
+}
+
+function chromeStorageGet(keys) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(keys, (result) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+      } else {
+        resolve(result || {});
+      }
+    });
+  });
+}
+
+function chromeStorageSet(items) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.set(items, () => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function chromeStorageRemove(keys) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.remove(keys, () => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function isExtensionContextInvalidatedError(error) {
+  return error?.message?.includes('Extension context invalidated') ||
+    error?.message?.includes('Extension context was invalidated');
+}
+
+async function clearAllUserElements() {
+  const pageKey = getCurrentPageKey();
+  const storageKey = getPageStorageKey(pageKey);
+
+  state.isClearing = true;
+  try {
+    if (state.highlighter.isActive) {
+      disableHighlighter();
+    }
+    if (state.eraser.isActive) {
+      disableEraser();
+    }
+
+    await clearAllElements();
+    state.elements = createEmptyElementsState();
+
+    // 等待先前已排入的儲存完成，再移除 key，避免舊寫入稍後讓資料復活。
+    await storageWriteQueue.catch(error => {
+      console.warn('FocusCut: Previous storage write failed before clear:', error);
+    });
+
+    // 即使擴充功能儲存暫時無法使用，也先清掉網站上殘留的舊版副本。
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (error) {
+      console.warn('FocusCut: Could not remove legacy localStorage data:', error);
+    }
+
+    if (!state.isExtensionValid) {
+      throw new Error('Chrome extension storage is unavailable');
+    }
+
+    await chromeStorageRemove([storageKey, pageKey]);
+
+    console.log('FocusCut: Cleared all elements and persisted data for current page');
+  } finally {
+    state.isClearing = false;
+  }
+}
+
+async function saveElements(pageKey = getCurrentPageKey()) {
+  if (!state.isInitialized || state.isRestoring || state.isClearing || !state.isExtensionValid) {
     return;
   }
-  
-  const pageKey = getCurrentPageKey();
-  const data = state.elements;
-  
-  // 首先保存到 localStorage (主要存儲)
+
+  // 在排入佇列前建立快照，避免後續狀態修改污染較早的寫入。
+  const storageKey = getPageStorageKey(pageKey);
+  const dataSnapshot = JSON.parse(JSON.stringify(state.elements));
+
+  storageWriteQueue = storageWriteQueue
+    .catch(() => undefined)
+    .then(() => chromeStorageSet({ [storageKey]: dataSnapshot }));
+
   try {
-    localStorage.setItem(`${config.STORAGE_PREFIX}${pageKey}`, JSON.stringify(data));
-    console.log('FocusCut: Saved to localStorage');
+    await storageWriteQueue;
+    console.log('FocusCut: Saved to Chrome storage');
+    return true;
   } catch (error) {
-    console.error('FocusCut: Failed to save to localStorage:', error);
-  }
-  
-  // 嘗試備份到 Chrome storage (靜默操作)
-  if (state.isExtensionValid && chrome?.runtime?.id) {
-    try {
-      chrome.storage.local.set({ [pageKey]: data }, () => {
-        // 成功時靜默處理，無需顯示消息
-        if (!chrome.runtime.lastError) {
-          // 成功但不記錄
-        } else {
-          // 失敗但也不記錄錯誤
-          state.isExtensionValid = false;
-        }
-      });
-    } catch (error) {
-      // 不記錄任何錯誤
-      state.isExtensionValid = false;
+    state.isExtensionValid = false;
+    if (isExtensionContextInvalidatedError(error)) {
+      console.warn('FocusCut: Extension was updated; the page will reconnect on the next action');
+    } else {
+      console.error('FocusCut: Failed to save to Chrome storage:', error);
     }
+    return false;
   }
 }
 
-// 載入元素
+async function migrateLegacyPageData(pageKey, storageData) {
+  const storageKey = getPageStorageKey(pageKey);
+  const legacyChromeData = storageData[pageKey];
+  const legacyLocalStorageKey = storageKey;
+  let legacyLocalData = null;
+
+  try {
+    const serializedData = localStorage.getItem(legacyLocalStorageKey);
+    if (serializedData) {
+      legacyLocalData = JSON.parse(serializedData);
+    }
+  } catch (error) {
+    console.warn('FocusCut: Could not read legacy localStorage data:', error);
+  }
+
+  // 舊版明確以 localStorage 為主要來源，Chrome Storage 僅為非同步備份。
+  // 兩者並存時優先遷移 localStorage，避免較舊備份覆蓋最後的編輯。
+  const dataToMigrate = legacyLocalData || legacyChromeData;
+  if (!dataToMigrate) {
+    return null;
+  }
+
+  // 先寫入擴充功能專用空間，成功後才刪除舊資料。
+  await chromeStorageSet({ [storageKey]: dataToMigrate });
+
+  if (legacyChromeData) {
+    try {
+      await chromeStorageRemove([pageKey]);
+    } catch (error) {
+      console.warn('FocusCut: Could not remove legacy Chrome storage key:', error);
+    }
+  }
+
+  try {
+    localStorage.removeItem(legacyLocalStorageKey);
+  } catch (error) {
+    console.warn('FocusCut: Could not remove migrated localStorage data:', error);
+  }
+
+  console.log('FocusCut: Migrated legacy page data to Chrome storage');
+  return dataToMigrate;
+}
+
+// 載入元素，Chrome Storage 是唯一的正式資料來源。
 async function loadSavedElements() {
   const pageKey = getCurrentPageKey();
-  let data = null;
-  
-  // 首先嘗試從 localStorage 載入
+  const storageKey = getPageStorageKey(pageKey);
+
+  if (!state.isExtensionValid) {
+    throw new Error('Chrome extension storage is unavailable');
+  }
+
+  let storageData;
   try {
-    const localData = localStorage.getItem(`${config.STORAGE_PREFIX}${pageKey}`);
-    if (localData) {
-      data = JSON.parse(localData);
-      console.log('FocusCut: Loaded from localStorage');
-    }
+    // 同時讀取新版前綴 key 與舊版原始 URL key，供無損遷移使用。
+    storageData = await chromeStorageGet([storageKey, pageKey]);
   } catch (error) {
-    console.warn('FocusCut: Failed to load from localStorage:', error);
+    state.isExtensionValid = false;
+    throw error;
   }
 
-  // 如果 localStorage 中沒有數據且擴展有效，嘗試從 Chrome storage 載入
-  if (!data && state.isExtensionValid && chrome?.runtime?.id) {
-    try {
-      // 使用 Promise 包裝 Chrome storage API
-      data = await new Promise((resolve, reject) => {
-        chrome.storage.local.get([pageKey], (storageData) => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else if (storageData && storageData[pageKey]) {
-            resolve(storageData[pageKey]);
-          } else {
-            resolve(null);
-          }
-        });
-      });
-      
-      if (data) {
-        console.log('FocusCut: Loaded from Chrome storage');
-        
-        // 同步到 localStorage (靜默操作)
-        try {
-          localStorage.setItem(`${config.STORAGE_PREFIX}${pageKey}`, JSON.stringify(data));
-        } catch (localStorageError) {
-          // 不記錄錯誤
-        }
-      }
-    } catch (error) {
-      // Chrome storage 不可用，標記為無效
-      state.isExtensionValid = false;
-      console.warn('FocusCut: Chrome storage unavailable, using localStorage only');
-    }
-  }
-
-  // 處理載入的數據
-  if (data) {
-    state.elements = {
-      dividers: Array.isArray(data.dividers) ? data.dividers : [],
-      blocks: Array.isArray(data.blocks) ? data.blocks : [],
-      notes: Array.isArray(data.notes) ? data.notes : [],
-      highlights: Array.isArray(data.highlights) ? data.highlights : [],
-      readingMask: data.readingMask || null,
-      highlighterBox: data.highlighterBox || null
-    };
-    await createElementsFromData(state.elements);
+  let data = storageData[storageKey] || null;
+  if (!data) {
+    data = await migrateLegacyPageData(pageKey, storageData);
   } else {
-    console.log('FocusCut: No saved elements found');
-    resetElements();
-  }
-}
-
-// 從本地存儲中加載數據並創建元素
-async function createElementsFromLocalData(pageKey) {
-  try {
-    const localData = localStorage.getItem(`${config.STORAGE_PREFIX}${pageKey}`);
-    if (localData) {
-      const data = JSON.parse(localData);
-      state.elements = {
-        dividers: Array.isArray(data.dividers) ? data.dividers : [],
-        blocks: Array.isArray(data.blocks) ? data.blocks : [],
-        notes: Array.isArray(data.notes) ? data.notes : [],
-        highlights: Array.isArray(data.highlights) ? data.highlights : [],
-        readingMask: data.readingMask || null,
-        highlighterBox: data.highlighterBox || null
-      };
-      createElementsFromData(state.elements);
-    } else {
-      console.log('FocusCut: No saved elements found');
-      resetElements();
+    // 新版資料已存在時，刪除網站上可能殘留的舊副本。
+    if (storageData[pageKey]) {
+      try {
+        await chromeStorageRemove([pageKey]);
+      } catch (error) {
+        console.warn('FocusCut: Could not remove legacy Chrome storage key:', error);
+      }
     }
-  } catch (error) {
-    console.error('FocusCut: Error loading from localStorage:', error);
-    resetElements();
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (error) {
+      console.warn('FocusCut: Could not remove stale localStorage data:', error);
+    }
+  }
+
+  state.elements = data ? normalizeElementsData(data) : createEmptyElementsState();
+
+  state.isRestoring = true;
+  try {
+    await createElementsFromData(state.elements);
+  } finally {
+    state.isRestoring = false;
+  }
+
+  if (!data) {
+    console.log('FocusCut: No saved elements found');
   }
 }
 
@@ -938,7 +1050,7 @@ async function createElementsFromData(elementsData) {
     if (elementsData.dividers.length > 0) {
       for (let i = 0; i < elementsData.dividers.length; i++) {
         try {
-          createDivider(elementsData.dividers[i]);
+          await createDivider(elementsData.dividers[i]);
         } catch (dividerError) {
           console.error('FocusCut: Error creating divider:', dividerError);
         }
@@ -949,7 +1061,7 @@ async function createElementsFromData(elementsData) {
     if (elementsData.blocks.length > 0) {
       for (let i = 0; i < elementsData.blocks.length; i++) {
         try {
-          createBlock(elementsData.blocks[i]);
+          await createBlock(elementsData.blocks[i]);
         } catch (blockError) {
           console.error('FocusCut: Error creating block:', blockError);
         }
@@ -960,7 +1072,7 @@ async function createElementsFromData(elementsData) {
     if (elementsData.notes.length > 0) {
       for (let i = 0; i < elementsData.notes.length; i++) {
         try {
-          createNote(elementsData.notes[i]);
+          await createNote(elementsData.notes[i]);
         } catch (noteError) {
           console.error('FocusCut: Error creating note:', noteError);
         }
@@ -979,18 +1091,19 @@ async function createElementsFromData(elementsData) {
     // 新增: 恢復遮色片
     if (elementsData.readingMask && elementsData.readingMask.isActive) {
       try {
-        console.log('FocusCut: Restoring reading mask:', elementsData.readingMask);
+        const savedReadingMask = elementsData.readingMask;
+        console.log('FocusCut: Restoring reading mask:', savedReadingMask);
         
         // 先設置保存的高度到全域變數
-        if (elementsData.readingMask.topHeight) {
-          topMaskHeight = elementsData.readingMask.topHeight;
+        if (savedReadingMask.topHeight) {
+          topMaskHeight = savedReadingMask.topHeight;
         }
-        if (elementsData.readingMask.bottomHeight) {
-          bottomMaskHeight = elementsData.readingMask.bottomHeight;
+        if (savedReadingMask.bottomHeight) {
+          bottomMaskHeight = savedReadingMask.bottomHeight;
         }
         
         // 創建遮色片 - 確保傳入完整的樣式對象
-        const maskStyle = elementsData.readingMask.style || {
+        const maskStyle = savedReadingMask.style || {
           style: 'white-blur',
           color: 'rgba(245, 245, 245, 0.4)',
           blur: true
@@ -998,11 +1111,11 @@ async function createElementsFromData(elementsData) {
         createReadingMaskWithStyle(maskStyle);
         
         // 再次確保高度正確（防止被重置）
-        if (readingMaskTop && elementsData.readingMask.topHeight) {
-          readingMaskTop.style.height = elementsData.readingMask.topHeight + 'px';
+        if (readingMaskTop && savedReadingMask.topHeight) {
+          readingMaskTop.style.height = savedReadingMask.topHeight + 'px';
         }
-        if (readingMaskBottom && elementsData.readingMask.bottomHeight) {
-          readingMaskBottom.style.height = elementsData.readingMask.bottomHeight + 'px';
+        if (readingMaskBottom && savedReadingMask.bottomHeight) {
+          readingMaskBottom.style.height = savedReadingMask.bottomHeight + 'px';
         }
         
         positionMasks();
@@ -1036,7 +1149,9 @@ async function createElementsFromData(elementsData) {
     console.log('FocusCut: Successfully created elements');
   } catch (error) {
     console.error('FocusCut: Error creating elements:', error);
-    resetElements();
+    await clearAllElements();
+    state.elements = createEmptyElementsState();
+    throw error;
   }
 }
 
@@ -1058,14 +1173,7 @@ function resetElements() {
   }
   
   // 清空所有元素陣列
-  state.elements = {
-    dividers: [],
-    blocks: [],
-    notes: [],
-    highlights: [],
-    readingMask: null,
-    highlighterBox: null
-  };
+  state.elements = createEmptyElementsState();
   
   // 移除頁面上的所有元素
   clearAllElements();
@@ -1087,20 +1195,38 @@ function resetElements() {
 
 // URL 變化處理
 async function handleUrlChange(newUrl = window.location.href) {
-  if (state.currentUrl === newUrl) return;
+  if (state.currentUrl === newUrl || state.isNavigating || !state.isInitialized) {
+    return;
+  }
   
-  console.log('FocusCut: URL changed from', state.currentUrl, 'to', newUrl);
-  state.currentUrl = newUrl;
+  const previousUrl = state.currentUrl;
+  state.isNavigating = true;
+  console.log('FocusCut: URL changed from', previousUrl, 'to', newUrl);
   
   try {
-    await clearAllElements();
-    resetElements();
-    
-    if (state.isInitialized) {
-      await loadSavedElements();
+    // 確保舊頁面最後一次狀態寫入完成，再切換儲存 key。
+    await saveElements(previousUrl);
+    state.currentUrl = newUrl;
+
+    if (state.highlighter.isActive) {
+      disableHighlighter();
     }
+    if (state.eraser.isActive) {
+      disableEraser();
+    }
+
+    await clearAllElements();
+    state.elements = createEmptyElementsState();
+    await loadSavedElements();
   } catch (error) {
     console.error('FocusCut: Error handling URL change:', error);
+  } finally {
+    state.isNavigating = false;
+
+    // 導航期間若網址又改變，繼續處理最新網址。
+    if (state.currentUrl !== window.location.href) {
+      handleUrlChange(window.location.href);
+    }
   }
 }
 
@@ -1127,12 +1253,20 @@ function getCurrentPageKey() {
 // 清除頁面上的所有元素
 function clearAllElements() {
   return new Promise((resolve) => {
-    const focuscutElements = document.querySelectorAll('.focuscut-divider, .focuscut-block, .focuscut-sticky-note, .focuscut-highlighter, .focuscut-reading-mask-top, .focuscut-reading-mask-bottom, .focuscut-reading-mask-controls');
+    const focuscutElements = document.querySelectorAll('.focuscut-divider, .focuscut-block, .focuscut-sticky-note, .focuscut-highlighter, .focuscut-reading-mask-top, .focuscut-reading-mask-bottom, .focuscut-reading-mask-controls, #focuscut-pen-box');
     console.log('FocusCut: Clearing', focuscutElements.length, 'existing elements');
     
     focuscutElements.forEach(el => {
       el.remove();
     });
+
+    readingMaskTop = null;
+    readingMaskBottom = null;
+    readingMaskControls = null;
+    isMaskActive = false;
+    isHighlighterBoxVisible = false;
+    window.removeEventListener('scroll', positionMasks);
+    window.removeEventListener('resize', handleResize);
     
     // 確保DOM操作有時間完成
     setTimeout(() => {
@@ -1157,7 +1291,6 @@ function createDivider(dividerData) {
     divider.style.left = dividerData.position.x + 'px';
     divider.style.top = dividerData.position.y + 'px';
     divider.style.width = (dividerData.width || '100%');
-    divider.style.zIndex = '9999';
     
     const deleteButton = document.createElement('div');
     deleteButton.className = 'focuscut-delete-button';
@@ -1200,7 +1333,6 @@ function createBlock(blockData) {
     block.style.top = blockData.position.y + 'px';
     block.style.width = (blockData.size.width || 200) + 'px';
     block.style.height = (blockData.size.height || 100) + 'px';
-    block.style.zIndex = '9998';
     
     // 如果是固定狀態，添加自定義屬性
     if (blockData.fixed) {
@@ -1395,7 +1527,6 @@ function createNote(noteData) {
     note.style.width = (noteData.width || '250px');
     note.style.height = (noteData.height || 'auto');
     note.style.backgroundColor = noteData.color || '#f8f0cc';
-    note.style.zIndex = '10000';
     note.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)'; // 輕微陰影替代邊框
     note.style.border = 'none'; // 移除邊框
     note.style.borderRadius = '2px'; // 保持輕微圓角

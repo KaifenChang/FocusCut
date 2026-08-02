@@ -18,6 +18,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('FocusCut Popup: Loaded');
+
+  const tabMessaging = globalThis.FocusCutTabMessaging;
   
   // 獲取所有 DOM 元素
   const errorContainer = document.getElementById('error-container');
@@ -70,21 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   async function updateReadingMaskStyle(maskStyle) {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab && tab.id) {
-        chrome.tabs.sendMessage(tab.id, {
-          action: 'updateReadingMaskStyle',
-          maskStyle: maskStyle
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            console.log('Reading mask not active or failed to update:', chrome.runtime.lastError.message);
-          } else {
-            console.log('Reading mask style updated successfully');
-          }
-        });
-      }
+      await sendMessageToTab({
+        action: 'updateReadingMaskStyle',
+        maskStyle
+      });
+      console.log('Reading mask style updated successfully');
     } catch (error) {
-      console.error('Error updating reading mask style:', error);
+      console.log('Reading mask not active or failed to update:', error.message);
     }
   }
 
@@ -175,46 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
    * @param {string} color - 顏色參數
    * @returns {Promise} - 消息發送結果
    */
-  function sendMessageToTab(action, color) {
-    return new Promise((resolve, reject) => {
-      try {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (chrome.runtime.lastError) {
-            console.error('Tab query error:', chrome.runtime.lastError.message);
-            reject(chrome.runtime.lastError);
-            return;
-          }
-          
-          if (tabs && tabs.length > 0 && tabs[0].id) {
-            try {
-              chrome.tabs.sendMessage(
-                tabs[0].id,
-                { action, color },
-                (response) => {
-                  if (chrome.runtime.lastError) {
-                    console.error('Message send error:', chrome.runtime.lastError.message);
-                    reject(chrome.runtime.lastError);
-                  } else {
-                    console.log('Message sent successfully:', { action, color });
-                    resolve(response);
-                  }
-                }
-              );
-            } catch (e) {
-              console.error('Failed to send message:', e);
-              reject(e);
-            }
-          } else {
-            const error = new Error('No active tab found');
-            console.error(error.message);
-            reject(error);
-          }
-        });
-      } catch (e) {
-        console.error('Error in tab query:', e);
-        reject(e);
-      }
-    });
+  async function sendMessageToTab(actionOrMessage, color) {
+    const message = typeof actionOrMessage === 'string'
+      ? { action: actionOrMessage, color }
+      : actionOrMessage;
+    const response = await tabMessaging.sendMessageToActiveTab(message);
+    console.log('Message sent successfully:', message.action);
+    return response;
   }
 
   // =============================================================================
@@ -224,28 +185,17 @@ document.addEventListener('DOMContentLoaded', () => {
   /**
    * 檢查當前頁面是否支援擴展功能
    */
-  function checkPageSupport() {
+  async function checkPageSupport() {
     try {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const currentTab = tabs && tabs.length > 0 ? tabs[0] : null;
-        
-        // 檢查是否是不支援的頁面
-        const unsupportedPrefixes = [
-          'chrome://',
-          'edge://',
-          'about:',
-          'chrome-extension://'
-        ];
-        
-        if (!currentTab || !currentTab.url || 
-            unsupportedPrefixes.some(prefix => currentTab.url.startsWith(prefix))) {
-          errorContainer.style.display = 'block';
-          mainContainer.style.display = 'none';
-          return;
-        }
-      });
+      const currentTab = await tabMessaging.getActiveTab();
+      if (!tabMessaging.isSupportedPageUrl(currentTab.url)) {
+        errorContainer.style.display = 'block';
+        mainContainer.style.display = 'none';
+      }
     } catch (e) {
       console.log('Tab query error:', e);
+      errorContainer.style.display = 'block';
+      mainContainer.style.display = 'none';
     }
   }
 
@@ -342,29 +292,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 開關狀態變更事件
     toggleReadingMaskCheckbox.addEventListener('change', async () => {
       try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        
-        if (!tab || !tab.id) {
-          console.error('No active tab found');
-          return;
-        }
-        
-        // 發送切換遮色片消息
-        chrome.tabs.sendMessage(tab.id, { 
+        const response = await sendMessageToTab({
           action: 'toggleReadingMask',
           maskStyle: selectedMaskStyle
-        }, (response) => {
-          // 同步開關狀態
-          if (response && response.isVisible !== undefined) {
-            toggleReadingMaskCheckbox.checked = response.isVisible;
-          }
-          
-          if (chrome.runtime.lastError) {
-            console.error('Error toggling reading mask:', chrome.runtime.lastError.message);
-            toggleReadingMaskCheckbox.checked = !toggleReadingMaskCheckbox.checked;
-            showErrorMessage('無法啟用遮色片，請重新整理頁面後再試。');
-          }
         });
+        if (response && response.isVisible !== undefined) {
+          toggleReadingMaskCheckbox.checked = response.isVisible;
+        }
         
       } catch (error) {
         console.error('Error toggling reading mask:', error);
@@ -385,28 +319,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 開關狀態變更事件
     toggleHighlighterCheckbox.addEventListener('change', async () => {
       try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        
-        if (!tab || !tab.id) {
-          console.error('No active tab found');
-          return;
-        }
-        
-        // 發送切換螢光筆盒消息
-        chrome.tabs.sendMessage(tab.id, { 
+        const response = await sendMessageToTab({
           action: 'toggleHighlighterBox',
           color: '#ffff00' // 預設黃色
-        }, (response) => {
-          // 同步開關狀態
-          if (response && response.isVisible !== undefined) {
-            toggleHighlighterCheckbox.checked = response.isVisible;
-          }
-          
-          if (chrome.runtime.lastError) {
-            console.error('Error toggling highlighter:', chrome.runtime.lastError.message);
-            toggleHighlighterCheckbox.checked = !toggleHighlighterCheckbox.checked;
-          }
         });
+        if (response && response.isVisible !== undefined) {
+          toggleHighlighterCheckbox.checked = response.isVisible;
+        }
         
       } catch (error) {
         console.error('Error toggling highlighter:', error);
@@ -427,28 +346,14 @@ document.addEventListener('DOMContentLoaded', () => {
    * @param {string} action - 要檢查的動作
    * @param {HTMLElement} checkbox - 要更新的開關元素
    */
-  function checkToggleStatus(action, checkbox) {
+  async function checkToggleStatus(action, checkbox) {
     try {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs && tabs.length > 0 && tabs[0].id) {
-          chrome.tabs.sendMessage(
-            tabs[0].id,
-            { action: action },
-            (response) => {
-              if (chrome.runtime.lastError) {
-                console.log('Ignore this error:', chrome.runtime.lastError.message);
-                return;
-              }
-              
-              if (response && response.isVisible !== undefined) {
-                checkbox.checked = response.isVisible;
-              }
-            }
-          );
-        }
-      });
+      const response = await sendMessageToTab({ action });
+      if (response && response.isVisible !== undefined) {
+        checkbox.checked = response.isVisible;
+      }
     } catch (e) {
-      console.log('Error checking toggle status:', e);
+      console.log('Unable to check toggle status:', e.message);
     }
   }
-}); 
+});

@@ -1,3 +1,8 @@
+/*
+ * FocusCut 圖層順序：
+ * 遮色片 < 螢光標記 < 色卡 < 分隔線 < 便利貼 < 操作面板。
+ * 數值維持在高層，避免一般網站內容蓋住 FocusCut 元件。
+ */
 .focuscut-block {
   position: absolute;
   min-width: 100px;
@@ -7,7 +12,7 @@
   padding: 0;
   border-radius: 4px;
   cursor: move;
-  z-index: 9998;
+  z-index: 2147483620 !important;
   border: 1px dashed rgba(0, 0, 0, 0.2);
 }
 
@@ -20,7 +25,7 @@
   border-radius: 8px;
   box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
   padding: 14px;
-  z-index: 10000;
+  z-index: 2147483640 !important;
   cursor: move;
 }
 
@@ -150,6 +155,10 @@ p:hover .focuscut-add-note-button,
   display: none;
 }
 
+.focuscut-divider {
+  z-index: 2147483630 !important;
+}
+
 /* 移除遮色片拖拽控制條的樣式 */
 .focuscut-mask-drag-handle {
   display: none !important;
@@ -161,7 +170,7 @@ p:hover .focuscut-add-note-button,
   width: 100% !important;
   left: 0 !important;
   backdrop-filter: blur(4px) !important; /* 模糊背景，更聚焦 */
-  z-index: 2147483645 !important; /* 降低遮色片的z-index順序 */
+  z-index: 2147483600 !important;
   pointer-events: none !important;
   transition: all 0.2s ease !important;
 }
@@ -181,7 +190,7 @@ p:hover .focuscut-add-note-button,
   right: 20px !important;
   display: flex !important;
   gap: 10px !important;
-  z-index: 2147483646 !important; /* 降低z-index順序，確保筆盒可以顯示在上方 */
+  z-index: 2147483647 !important;
   pointer-events: auto !important;
   align-items: center !important;
 }
@@ -229,7 +238,7 @@ p:hover .focuscut-add-note-button,
   background-color: rgba(255, 255, 255, 0.7) !important;
   border-radius: 50% !important;
   cursor: ns-resize !important;
-  z-index: 2147483647 !important;
+  z-index: 1 !important;
   pointer-events: auto !important;
   border: 2px solid rgba(0, 0, 0, 0.3) !important;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;
@@ -260,7 +269,7 @@ p:hover .focuscut-add-note-button,
   background-color: rgba(200, 200, 200, 0.05) !important;
   cursor: ns-resize !important;
   pointer-events: auto !important;
-  z-index: 2147483646 !important; /* 降低z-index順序，確保筆盒可以顯示在上方 */
+  z-index: 1 !important;
   transition: background-color 0.2s !important;
 }
 
@@ -362,7 +371,7 @@ p:hover .focuscut-add-note-button,
 /* 螢光筆樣式 */
 .focuscut-highlighter {
   position: absolute;
-  z-index: 9997;
+  z-index: 2147483610 !important;
   pointer-events: none;
   border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -852,4 +861,4 @@ p:hover .focuscut-add-note-button,
   transform: scale(1.1) !important;
   border: 3px solid rgba(128, 128, 128, 0.8) !important;
   outline: none !important;
-} 
+}

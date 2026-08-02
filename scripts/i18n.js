@@ -284,6 +284,9 @@
    * 初始化關於頁面（現在是使用說明頁面）
    */
   function initializeAboutPage() {
+    document.documentElement.lang = getLanguage().replace('_', '-');
+    document.title = `FocusCut – ${getMessage('instructionsPageTitle', 'Instructions')}`;
+
     // 使用說明頁面標題
     updateElement('instructions-title', 'instructionsPageTitle', 'Instructions');
     
@@ -291,8 +294,9 @@
     updateElement('instruction-drag', 'instructionDrag', 'All elements can be dragged to adjust position');
     updateElement('instruction-delete', 'instructionDelete', 'Hover over elements to see delete button (top right)');
     updateElement('instruction-resize', 'instructionResize', 'Drag corner dots to resize elements');
-    updateElement('instruction-note-input', 'instructionNoteInput', 'Sticky notes can have multi-line text');
+    updateElement('instruction-lock', 'instructionLock', 'Pin cards to the screen with the lock button');
     updateElement('instruction-auto-save', 'instructionAutoSave', 'All changes are automatically saved');
+    updateElement('about-tagline', 'aboutTagline', 'Focused reading · Visual assistance');
     
     // 驚嘆號按鈕提示
     updateAttribute('info-btn', 'title', 'aboutInfoTooltip', 'About FocusCut');
@@ -391,4 +395,4 @@
 
   // 開始安全初始化
   safeInit();
-})(); 
+})();

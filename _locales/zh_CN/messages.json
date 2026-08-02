@@ -4,7 +4,7 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "使用分隔线、透明色块与便利贴，打造结构化的阅读体验。支持笔记保存、自动同步。",
+    "message": "使用分隔线、透明色块与便利贴，打造结构化的阅读体验。数据仅存储在 Chrome 本机。",
     "description": "Extension description"
   },
   "dividerTitle": {
@@ -51,6 +51,10 @@
     "message": "拖拽角落的圆点可以调整元素大小",
     "description": "Instruction for resizing elements"
   },
+  "instructionLock": {
+    "message": "点击锁定按钮可将卡片固定在屏幕上",
+    "description": "Instruction for pinning elements"
+  },
   "instructionNoteInput": {
     "message": "便利贴可以输入多行文字笔记",
     "description": "Instruction for using sticky notes"
@@ -58,6 +62,14 @@
   "instructionAutoSave": {
     "message": "所有更改都会自动保存",
     "description": "Instruction about auto-saving"
+  },
+  "backLink": {
+    "message": "← 返回主菜单",
+    "description": "Back link on the instructions page"
+  },
+  "aboutTagline": {
+    "message": "专注阅读体验 ・ 视觉辅助",
+    "description": "Tagline on the instructions page"
   },
   "errorUnsupported": {
     "message": "FocusOverlay 无法在此页面上运作。",
@@ -203,4 +215,4 @@
     "message": "关于 FocusOverlay",
     "description": "Tooltip for info button on instructions page"
   }
-} 
+}
