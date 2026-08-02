@@ -6,6 +6,9 @@
 
 FocusCut 是一款 Chrome 閱讀輔助擴充功能，可在網頁上加入閱讀色卡、遮色片、便利貼與螢光筆，幫助使用者降低視覺干擾、整理資訊並維持閱讀焦點。
 
+> [!IMPORTANT]
+> FocusCut 目前仍在測試階段，尚未上架 Chrome 線上應用程式商店。請依照下方步驟，以「載入未封裝項目」方式安裝。
+
 ## 功能特色
 
 - **閱讀色卡**：以半透明色卡標示或聚焦特定內容區域。
@@ -17,7 +20,7 @@ FocusCut 是一款 Chrome 閱讀輔助擴充功能，可在網頁上加入閱讀
 - **清除本頁**：透過彈窗底部的垃圾桶按鈕，確認後清除目前頁面的 FocusCut 內容。
 - **多語系介面**：支援繁體中文、簡體中文與英文。
 
-## 安裝方法
+## 安裝方法（開發測試版）
 
 ### 手動安裝
 
@@ -54,7 +57,7 @@ node --test tests/*.test.js
 ## 專案資訊
 
 - 顯示名稱：FocusCut – Reading Overlay
-- 版本：v1.3
+- 目前版本：v1.3（開發測試版）
 - 開發者：Kaifen Chang
 - 授權：MIT License
 
@@ -65,6 +68,9 @@ node --test tests/*.test.js
 # FocusCut – Reading Overlay (English)
 
 FocusCut is a Chrome reading-assistance extension that adds reading cards, a reading mask, sticky notes, and highlighting tools to web pages. It helps reduce visual distractions, organize information, and maintain reading focus.
+
+> [!IMPORTANT]
+> FocusCut is currently in development and is not yet available on the Chrome Web Store. Follow the instructions below to install it as an unpacked extension.
 
 ## Features
 
@@ -77,7 +83,7 @@ FocusCut is a Chrome reading-assistance extension that adds reading cards, a rea
 - **Clear This Page**: Remove all FocusCut content from the current page after confirmation.
 - **Multilingual UI**: Supports Traditional Chinese, Simplified Chinese, and English.
 
-## Manual Installation
+## Installation (Development Version)
 
 1. Download and extract this repository.
 2. Open `chrome://extensions/` in Chrome.
@@ -112,7 +118,7 @@ node --test tests/*.test.js
 ## Project Information
 
 - Display name: FocusCut – Reading Overlay
-- Version: v1.3
+- Current version: v1.3 (development build)
 - Developer: Kaifen Chang
 - License: MIT License
 
