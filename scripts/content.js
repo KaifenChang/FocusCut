@@ -1,5 +1,5 @@
 /**
- * FocusOverlay Content Script
+ * FocusCut Content Script
  * ===========================
  * 
  * 主要功能：
@@ -9,7 +9,7 @@
  * - 螢光筆盒：文字高亮和橡皮擦功能
  * 
  * 作者：KXii
- * 版本：v1.1
+ * 版本：v1.3
  */
 
 // =============================================================================
@@ -64,8 +64,23 @@ const config = {
   MAX_RETRIES: 5,                                // 最大重試次數
   RETRY_DELAY: 1000,                             // 重試延遲（毫秒）
   STORAGE_PREFIX: 'focuscut_',                   // 存儲前綴
-  EXTENSION_CHECK_INTERVAL: 500                  // 擴展檢查間隔（毫秒）
+  EXTENSION_CHECK_INTERVAL: 500,                 // 擴展檢查間隔（毫秒）
+  DOM_RETRY_DELAY: 50,                           // 等待頁面容器的檢查間隔（毫秒）
+  DOM_READY_TIMEOUT: 5000                        // 等待頁面容器的最長時間（毫秒）
 };
+
+async function waitForDocumentBody() {
+  const deadline = Date.now() + config.DOM_READY_TIMEOUT;
+
+  while (!document.body) {
+    if (Date.now() >= deadline) {
+      throw new Error('Page document body is not available');
+    }
+    await new Promise(resolve => setTimeout(resolve, config.DOM_RETRY_DELAY));
+  }
+
+  return document.body;
+}
 
 // =============================================================================
 // 遮色片全局變數
@@ -347,6 +362,9 @@ async function initializeExtension() {
   console.log('FocusCut: Starting initialization...');
   
   try {
+    // 部分頁面或 SPA 導航期間會短暫移除 body，先等待可掛載的頁面容器。
+    await waitForDocumentBody();
+
     // 檢查擴展上下文有效性
     state.isExtensionValid = await checkExtensionContext();
 
@@ -937,9 +955,7 @@ async function saveElements(pageKey = getCurrentPageKey()) {
     return true;
   } catch (error) {
     state.isExtensionValid = false;
-    if (isExtensionContextInvalidatedError(error)) {
-      console.warn('FocusCut: Extension was updated; the page will reconnect on the next action');
-    } else {
+    if (!isExtensionContextInvalidatedError(error)) {
       console.error('FocusCut: Failed to save to Chrome storage:', error);
     }
     return false;
@@ -1045,6 +1061,7 @@ async function createElementsFromData(elementsData) {
   try {
     // 清除現有元素
     await clearAllElements();
+    await waitForDocumentBody();
     
     // 創建分隔線
     if (elementsData.dividers.length > 0) {
@@ -1282,7 +1299,8 @@ function safeEncodeURL(url) {
 }
 
 // 創建分隔線
-function createDivider(dividerData) {
+async function createDivider(dividerData) {
+  const pageBody = await waitForDocumentBody();
   return new Promise((resolve) => {
     const divider = document.createElement('div');
     divider.className = 'focuscut-divider';
@@ -1312,13 +1330,14 @@ function createDivider(dividerData) {
     
     makeDraggable(divider, dividerData);
     
-    document.body.appendChild(divider);
+    pageBody.appendChild(divider);
     resolve(divider);
   });
 }
 
 // 創建色卡
-function createBlock(blockData) {
+async function createBlock(blockData) {
+  const pageBody = await waitForDocumentBody();
   return new Promise((resolve) => {
     const block = document.createElement('div');
     block.className = 'focuscut-block';
@@ -1428,7 +1447,7 @@ function createBlock(blockData) {
     // 使元素可拖動
     makeDraggable(block, blockData);
     
-    document.body.appendChild(block);
+    pageBody.appendChild(block);
     resolve(block);
   });
 }
@@ -1515,7 +1534,8 @@ function initResize(e, element, data, type) {
 }
 
 // 創建便利貼
-function createNote(noteData) {
+async function createNote(noteData) {
+  const pageBody = await waitForDocumentBody();
   return new Promise((resolve) => {
     const note = document.createElement('div');
     note.className = 'focuscut-sticky-note';
@@ -1657,7 +1677,7 @@ function createNote(noteData) {
     
     makeDraggable(note, noteData);
     
-    document.body.appendChild(note);
+    pageBody.appendChild(note);
     resolve(note);
   });
 }

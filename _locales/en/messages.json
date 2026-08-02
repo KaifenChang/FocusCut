@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "FocusOverlay",
+    "message": "FocusCut – Reading Overlay",
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "Create structured reading experiences with dividers, transparent blocks, and sticky notes. Data is saved locally in Chrome.",
+    "message": "Focus on web content with reading cards, masks, sticky notes, and highlighting tools. Data stays in Chrome's local storage.",
     "description": "Extension description"
   },
   "dividerTitle": {
@@ -30,6 +30,22 @@
   "addNote": {
     "message": "Add Sticky Note",
     "description": "Button text for adding a sticky note"
+  },
+  "addAction": {
+    "message": "Add",
+    "description": "Short add action label"
+  },
+  "colorOption": {
+    "message": "color option",
+    "description": "Accessible label for a color choice"
+  },
+  "statusOn": {
+    "message": "On",
+    "description": "Enabled toggle status"
+  },
+  "statusOff": {
+    "message": "Off",
+    "description": "Disabled toggle status"
   },
   "customColor": {
     "message": "Custom Color",
@@ -72,7 +88,7 @@
     "description": "Tagline on the instructions page"
   },
   "errorUnsupported": {
-    "message": "FocusOverlay cannot work on this page.",
+    "message": "FocusCut cannot work on this page.",
     "description": "Error message for unsupported pages"
   },
   "errorUseOnRegular": {
@@ -84,7 +100,7 @@
     "description": "Copyright page title"
   },
   "aboutLink": {
-    "message": "About FocusOverlay",
+    "message": "About FocusCut",
     "description": "Link text to about page"
   },
   "versionInfo": {
@@ -128,7 +144,7 @@
     "description": "Sponsor developer section title"
   },
   "sponsorMessage": {
-    "message": "FocusOverlay is a small tool I developed independently. I hope it helps you read more focused.\nIf you find it useful, consider buying me a coffee 💛",
+    "message": "FocusCut is a small tool I developed independently. I hope it helps you read with greater focus.\nIf you find it useful, consider buying me a coffee 💛",
     "description": "Sponsor message for the developer"
   },
   "readingMaskTitle": {
@@ -213,7 +229,19 @@
     "description": "Instructions page title"
   },
   "aboutInfoTooltip": {
-    "message": "About FocusOverlay",
+    "message": "About FocusCut",
     "description": "Tooltip for info button on instructions page"
+  },
+  "clearCurrentPage": {
+    "message": "Clear this page",
+    "description": "Tooltip and accessible label for clearing the current page"
+  },
+  "clearCurrentPageConfirm": {
+    "message": "Clear all FocusCut items on this page? This cannot be undone.",
+    "description": "Confirmation shown before clearing the current page"
+  },
+  "clearCurrentPageError": {
+    "message": "Unable to clear this page. Please refresh and try again.",
+    "description": "Error shown when clearing the current page fails"
   }
 }

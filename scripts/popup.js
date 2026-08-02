@@ -1,5 +1,5 @@
 /**
- * FocusOverlay Popup Script
+ * FocusCut Popup Script
  * =========================
  * 
  * 功能說明：
@@ -9,7 +9,7 @@
  * - 管理遮色片和螢光筆盒的狀態
  * 
  * 作者：KXii
- * 版本：v1.1
+ * 版本：v1.3
  */
 
 // =============================================================================
@@ -20,12 +20,56 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('FocusCut Popup: Loaded');
 
   const tabMessaging = globalThis.FocusCutTabMessaging;
+  const isPreviewMode = ['127.0.0.1', 'localhost'].includes(window.location.hostname) &&
+    new URLSearchParams(window.location.search).has('preview');
+
+  function getPopupMessage(key, fallback) {
+    try {
+      return chrome.i18n.getMessage(key) || fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  function getClearPageCopy() {
+    const language = (document.documentElement.lang || '').toLowerCase();
+    const readingCardTitle = document.getElementById('reading-card-title')?.textContent || '';
+    const isChineseInterface = language.startsWith('zh') || /[\u3400-\u9fff]/.test(readingCardTitle);
+
+    if (isChineseInterface) {
+      const isSimplifiedChinese = language.startsWith('zh-cn') || language.startsWith('zh-sg');
+      return isSimplifiedChinese
+        ? {
+            label: '清除此页',
+            confirm: '要清除当前页面的所有 FocusCut 内容吗？此操作无法撤销。',
+            error: '无法清除此页，请刷新后重试。'
+          }
+        : {
+            label: '清除此頁',
+            confirm: '要清除目前頁面的所有 FocusCut 內容嗎？此操作無法復原。',
+            error: '無法清除此頁，請重新整理後再試。'
+          };
+    }
+
+    return {
+      label: getPopupMessage('clearCurrentPage', 'Clear this page'),
+      confirm: getPopupMessage(
+        'clearCurrentPageConfirm',
+        'Clear all FocusCut items on this page? This cannot be undone.'
+      ),
+      error: getPopupMessage(
+        'clearCurrentPageError',
+        'Unable to clear this page. Please refresh and try again.'
+      )
+    };
+  }
   
   // 獲取所有 DOM 元素
   const errorContainer = document.getElementById('error-container');
   const mainContainer = document.getElementById('main-container');
   const addBlockButton = document.getElementById('addBlock');
   const addNoteButton = document.getElementById('addNote');
+  const clearPageButton = document.getElementById('clear-page-button');
   const blockColorInput = document.getElementById('blockColor');
   const noteColorInput = document.getElementById('noteColor');
   const maskColorInput = document.getElementById('maskColor');
@@ -38,8 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
    * 遮色片樣式設置，使用預設的深灰模糊樣式
    */
   let selectedMaskStyle = {
-    style: 'dark-blur-gray',
-    color: 'rgba(120, 120, 120, 0.4)',
+    style: 'white-blur',
+    color: 'rgba(245, 245, 245, 0.4)',
     blur: true
   };
 
@@ -95,13 +139,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const presets = document.getElementById(presetsId);
     if (!presets) return;
 
-    presets.querySelectorAll('.color-preset').forEach(preset => {
+    const featureKeys = {
+      blockPresets: 'readingCardTitle',
+      notePresets: 'noteTitle'
+    };
+    const featureFallbacks = {
+      blockPresets: 'Reading card',
+      notePresets: 'Sticky note'
+    };
+    const featureName = getPopupMessage(featureKeys[presetsId], featureFallbacks[presetsId]);
+
+    presets.querySelectorAll('.color-preset').forEach((preset, index) => {
+      const accessibleLabel = `${featureName} ${getPopupMessage('colorOption', 'color option')} ${index + 1}`;
+      preset.setAttribute('aria-label', accessibleLabel);
+      preset.title = accessibleLabel;
       preset.addEventListener('click', () => {
         // 移除所有 selected class
-        presets.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+        presets.querySelectorAll('.color-preset').forEach(p => {
+          p.classList.remove('selected');
+          p.setAttribute('aria-pressed', 'false');
+        });
         
         // 為點擊的色票添加 selected class
         preset.classList.add('selected');
+        preset.setAttribute('aria-pressed', 'true');
         
         // 更新顏色輸入框
         const color = preset.getAttribute('data-color');
@@ -119,13 +180,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const presets = document.getElementById(presetsId);
     if (!presets) return;
 
-    presets.querySelectorAll('.color-preset').forEach(preset => {
+    const featureName = getPopupMessage('readingMaskTitle', 'Reading mask');
+    presets.querySelectorAll('.color-preset').forEach((preset, index) => {
+      const accessibleLabel = `${featureName} ${getPopupMessage('colorOption', 'color option')} ${index + 1}`;
+      preset.setAttribute('aria-label', accessibleLabel);
+      preset.title = accessibleLabel;
       preset.addEventListener('click', async () => {
         // 移除所有 selected class
-        presets.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+        presets.querySelectorAll('.color-preset').forEach(p => {
+          p.classList.remove('selected');
+          p.setAttribute('aria-pressed', 'false');
+        });
         
         // 為點擊的色票添加 selected class
         preset.classList.add('selected');
+        preset.setAttribute('aria-pressed', 'true');
         
         const color = preset.getAttribute('data-color');
         const style = preset.getAttribute('data-style');
@@ -141,7 +210,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const colorMap = {
           'white-blur': '#f5f5f5',
           'light-blur-gray': '#d3d3d3',
-          'dark-blur-gray': '#646464'
+          'dark-blur-gray': '#646464',
+          'darker-blur-gray': '#323232'
         };
         
         if (colorMap[style]) {
@@ -200,7 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 執行頁面支援檢查
-  checkPageSupport();
+  if (!isPreviewMode) {
+    checkPageSupport();
+  }
 
   // =============================================================================
   // 按鈕事件綁定
@@ -236,6 +308,40 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (error) {
         console.error('Failed to add note:', error);
         showErrorMessage('無法新增便利貼，請重新整理頁面後再試。');
+      }
+    });
+  }
+
+  if (clearPageButton) {
+    const updateClearPageLabel = () => {
+      const { label } = getClearPageCopy();
+      clearPageButton.title = label;
+      clearPageButton.setAttribute('aria-label', label);
+    };
+    updateClearPageLabel();
+    queueMicrotask(updateClearPageLabel);
+
+    clearPageButton.addEventListener('click', async () => {
+      const copy = getClearPageCopy();
+      const confirmed = window.confirm(copy.confirm);
+      if (!confirmed) return;
+
+      clearPageButton.disabled = true;
+      try {
+        const response = await sendMessageToTab({ action: 'clearAll' });
+        if (response?.status === 'error') {
+          throw new Error(response.message || 'Clear failed');
+        }
+
+        const readingMaskToggle = document.getElementById('toggle-reading-mask');
+        const highlighterToggle = document.getElementById('toggle-highlighter');
+        if (readingMaskToggle) readingMaskToggle.checked = false;
+        if (highlighterToggle) highlighterToggle.checked = false;
+      } catch (error) {
+        console.error('Failed to clear current page:', error);
+        showErrorMessage(copy.error);
+      } finally {
+        clearPageButton.disabled = false;
       }
     });
   }
@@ -299,7 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response && response.isVisible !== undefined) {
           toggleReadingMaskCheckbox.checked = response.isVisible;
         }
-        
       } catch (error) {
         console.error('Error toggling reading mask:', error);
         toggleReadingMaskCheckbox.checked = !toggleReadingMaskCheckbox.checked;
@@ -308,7 +413,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // 檢查遮色片當前狀態並更新開關
-    checkToggleStatus('checkReadingMaskStatus', toggleReadingMaskCheckbox);
+    if (!isPreviewMode) {
+      checkToggleStatus('checkReadingMaskStatus', toggleReadingMaskCheckbox);
+    }
   }
   
   /**
@@ -326,7 +433,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response && response.isVisible !== undefined) {
           toggleHighlighterCheckbox.checked = response.isVisible;
         }
-        
       } catch (error) {
         console.error('Error toggling highlighter:', error);
         toggleHighlighterCheckbox.checked = !toggleHighlighterCheckbox.checked;
@@ -334,7 +440,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // 檢查螢光筆盒當前狀態並更新開關
-    checkToggleStatus('checkHighlighterBoxStatus', toggleHighlighterCheckbox);
+    if (!isPreviewMode) {
+      checkToggleStatus('checkHighlighterBoxStatus', toggleHighlighterCheckbox);
+    }
   }
 
   // =============================================================================

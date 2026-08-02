@@ -1,5 +1,5 @@
 /**
- * FocusOverlay Background Script
+ * FocusCut Background Script
  * ==============================
  * 
  * 功能說明：
@@ -8,7 +8,7 @@
  * - 管理擴展的全域狀態
  * 
  * 作者：KXii
- * 版本：v1.1
+ * 版本：v1.3
  */
 
 console.log('FocusCut: Background script loaded');
@@ -83,4 +83,4 @@ function sendMessageToContentScript(tabId, message) {
     // 忽略因內容腳本尚未載入導致的錯誤
     console.log('FocusCut: Could not send message to content script (possibly not loaded yet)');
   });
-} 
+}

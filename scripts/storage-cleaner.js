@@ -1,5 +1,5 @@
 /**
- * FocusOverlay Storage Cleaner Utility
+ * FocusCut Storage Cleaner Utility
  * ====================================
  * 
  * 功能說明：
@@ -13,7 +13,7 @@
  * 3. 調用所需的函數
  * 
  * 作者：KXii
- * 版本：v1.1
+ * 版本：v1.3
  */
 
 // =============================================================================
@@ -165,4 +165,4 @@ Example usage:
 }
 
 // 顯示歡迎訊息
-console.log('🛠️  FocusCut Storage Cleaner loaded. Type showHelp() for available commands.'); 
+console.log('🛠️  FocusCut Storage Cleaner loaded. Type showHelp() for available commands.');

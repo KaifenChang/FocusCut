@@ -256,7 +256,7 @@ async function createHarness({ url, chromeData = {}, localData = {} }) {
     'Content script did not initialize'
   );
 
-  return { context, chromeStorage, localStorage, window, getIntervalCount: () => intervalCount };
+  return { context, chromeStorage, localStorage, document, window, getIntervalCount: () => intervalCount };
 }
 
 test('first use saves only to extension-owned Chrome storage', async () => {
@@ -377,6 +377,33 @@ test('SPA navigation keeps initialization and loads the new page key', async () 
   assert.equal(harness.chromeStorage.data[`focuscut_${firstUrl}`].notes.length, 1);
   assert.equal(harness.chromeStorage.data[`focuscut_${secondUrl}`].notes.length, 2);
   assert.equal(harness.getIntervalCount(), 1);
+});
+
+test('restoration waits while an SPA temporarily replaces document.body', async () => {
+  const harness = await createHarness({ url: 'https://example.com/body-replacement' });
+  const oldBody = harness.document.body;
+  harness.document.elements.delete(oldBody);
+  harness.document.body = null;
+
+  setTimeout(() => {
+    const replacementBody = harness.document.createElement('body');
+    harness.document.body = replacementBody;
+    harness.document.elements.add(replacementBody);
+  }, 0);
+
+  await vm.runInContext(`createElementsFromData({
+    dividers: [],
+    blocks: [{ color: '#ff6b6b', position: { x: 10, y: 20 }, size: { width: 100, height: 50 } }],
+    notes: [{ text: 'restored', color: '#fff', position: { x: 30, y: 40 } }],
+    highlights: [],
+    readingMask: null,
+    highlighterBox: null
+  })`, harness.context);
+
+  assert.equal(harness.document.querySelectorAll('.focuscut-block').length, 1);
+  assert.equal(harness.document.querySelectorAll('.focuscut-sticky-note').length, 1);
+  assert.equal(harness.document.querySelector('.focuscut-block').parentNode, harness.document.body);
+  assert.equal(harness.document.querySelector('.focuscut-sticky-note').parentNode, harness.document.body);
 });
 
 test('clearAll removes DOM, state, queued writes, and persisted page data', async () => {

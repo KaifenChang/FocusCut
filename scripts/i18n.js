@@ -1,5 +1,5 @@
 /**
- * FocusOverlay Internationalization (i18n) Script
+ * FocusCut Internationalization (i18n) Script
  * ================================================
  * 
  * 功能說明：
@@ -9,7 +9,7 @@
  * - 支援回退機制防止錯誤
  * 
  * 作者：KXii
- * 版本：v1.1
+ * 版本：v1.3
  */
 
 (function() {
@@ -327,10 +327,22 @@
    * 初始化彈出窗口
    */
   function initializePopupPage() {
+    document.documentElement.lang = getLanguage().replace('_', '-');
+
     // 功能標題
     updateElement('reading-card-title', 'readingCardTitle', 'Reading Card');
     updateElement('note-title', 'noteTitle', 'Note');
     updateElement('highlighter-title', 'highlighterTitle', 'Highlighter Box');
+    updateElement('add-block-label', 'addAction', 'Add');
+    updateElement('add-note-label', 'addAction', 'Add');
+    updateElement('reading-mask-status', 'statusOff', 'Off');
+    updateElement('highlighter-status', 'statusOff', 'Off');
+    updateAttribute('toggle-reading-mask', 'aria-label', 'enableReadingMask', 'Enable reading mask');
+    updateAttribute('toggle-highlighter', 'aria-label', 'enableHighlighter', 'Enable highlighter');
+    updateAttribute('addBlock', 'aria-label', 'addReadingCard', 'Add reading card');
+    updateAttribute('addNote', 'aria-label', 'addNote', 'Add sticky note');
+    updateAttribute('clear-page-button', 'title', 'clearCurrentPage', 'Clear this page');
+    updateAttribute('clear-page-button', 'aria-label', 'clearCurrentPage', 'Clear this page');
     
     // 遮色片相關元素
     updateMaskElements();

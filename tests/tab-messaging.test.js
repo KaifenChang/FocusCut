@@ -82,12 +82,12 @@ test('manifest and popup include the recovery dependencies', () => {
   assert.doesNotMatch(popupScript, /chrome\.tabs\.sendMessage/);
 });
 
-test('expected extension-update invalidation is not logged as a storage error', () => {
+test('expected extension-update invalidation is handled silently', () => {
   const contentScript = fs.readFileSync(
     path.join(projectRoot, 'scripts', 'content.js'),
     'utf8'
   );
 
   assert.match(contentScript, /isExtensionContextInvalidatedError\(error\)/);
-  assert.match(contentScript, /Extension was updated; the page will reconnect/);
+  assert.doesNotMatch(contentScript, /Extension was updated; the page will reconnect/);
 });

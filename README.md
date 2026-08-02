@@ -1,110 +1,123 @@
-# FocusCut
+# FocusCut – Reading Overlay
 
 <div align="center">
-  <img src="banner/FocusCut.png" alt="FocusCut Banner" width="600">
+  <img src="banner/FocusCut.png" alt="FocusCut – Reading Overlay" width="600">
 </div>
 
-FocusOverlay 是一個專為提升閱讀和學習體驗而設計的 Chrome 擴展。它允許用戶在網頁上創建視覺輔助工具，包括分隔線、閱讀色卡和便利貼，幫助改善專注力和資訊整理。
-
+FocusCut 是一款 Chrome 閱讀輔助擴充功能，可在網頁上加入閱讀色卡、遮色片、便利貼與螢光筆，幫助使用者降低視覺干擾、整理資訊並維持閱讀焦點。
 
 ## 功能特色
 
-- **分隔線**：在頁面上添加水平分隔線，幫助區分內容段落
-- **閱讀色卡**：使用半透明色卡覆蓋特定區域，突出顯示重要內容
-- **便利貼**：在頁面上添加可編輯的便利貼，記錄筆記和評論
-- **自定義顏色**：所有元素都支持自定義顏色，滿足個人偏好
-- **拖拽和調整**：所有元素都可以自由拖拽和調整大小
-- **自動保存**：頁面元素會自動保存，刷新頁面後依然保留
-- **多語言支持**：支持多種語言界面
+- **閱讀色卡**：以半透明色卡標示或聚焦特定內容區域。
+- **遮色片**：遮住畫面上下區域，保留中間閱讀範圍。
+- **便利貼**：在網頁上加入可編輯、可移動的文字筆記。
+- **螢光筆盒**：標記網頁文字，並可使用橡皮擦移除標記。
+- **自由調整**：閱讀色卡與便利貼支援拖曳、縮放及鎖定位置。
+- **自動儲存**：每個頁面的 FocusCut 內容會儲存在 Chrome 本機，重新整理後仍可還原。
+- **清除本頁**：透過彈窗底部的垃圾桶按鈕，確認後清除目前頁面的 FocusCut 內容。
+- **多語系介面**：支援繁體中文、簡體中文與英文。
 
 ## 安裝方法
 
-1. 從 [Chrome 網上應用店](https://chrome.google.com/webstore) 下載安裝 (即將上線)
-2. 手動安裝:
-   - 下載本倉庫並解壓縮
-   - 在 Chrome 瀏覽器中打開 `chrome://extensions/`
-   - 開啟「開發者模式」
-   - 點擊「載入未封裝項目」
-   - 選擇解壓縮後的目錄
+### 手動安裝
+
+1. 下載此專案並解壓縮。
+2. 在 Chrome 開啟 `chrome://extensions/`。
+3. 開啟右上角的「開發人員模式」。
+4. 點擊「載入未封裝項目」。
+5. 選擇本專案資料夾。
 
 ## 使用方法
 
-1. 點擊瀏覽器工具欄中的 FocusOverlay 圖標
-2. 從彈出窗口中選擇要添加的元素類型和顏色
-3. 元素會自動添加到當前頁面
-4. 拖拽調整元素位置，或使用右下角的調整手柄改變元素大小
-5. 便利貼支持直接編輯文字內容
-6. 點擊元素上的 × 按鈕可以刪除該元素
+1. 點擊瀏覽器工具列中的 **FocusCut** 圖示。
+2. 在「閱讀色卡」或「便利貼」選擇顏色，再點擊「新增」。
+3. 使用右側開關啟用遮色片或螢光筆盒。
+4. 拖曳卡片調整位置；使用角落控制點調整大小，或使用鎖定按鈕固定在畫面上。
+5. 點擊元素右上角的刪除按鈕可移除單一元素。
+6. 點擊彈窗底部的垃圾桶可清除目前頁面的所有 FocusCut 內容；點擊 `?` 可查看使用說明。
 
-## 隱私政策
+## 資料與隱私
 
-FocusOverlay 尊重您的隱私:
-- 不收集任何個人資訊
-- 不追蹤您的瀏覽活動
-- 所有數據僅存儲在本地，不會上傳到任何伺服器
+- 不需要帳號或登入。
+- 不收集個人資訊，也不追蹤瀏覽活動。
+- 閱讀色卡、遮色片、便利貼與標記只會儲存在 Chrome 的本機擴充功能儲存空間。
+- 不會將網頁內容或使用者資料傳送至外部伺服器。
 
-## 開發者信息
+詳細內容請參閱 [Privacy Policy](privacy.html)。
 
-- 開發者: Kaifen Chang
-- 版本: 1.0
-- 授權: MIT License
+## 開發與測試
 
-## 反饋與支持
+```bash
+node --test tests/*.test.js
+```
 
-如有問題或建議，請通過 GitHub Issues 提交反饋。
+## 專案資訊
+
+- 顯示名稱：FocusCut – Reading Overlay
+- 版本：v1.3
+- 開發者：Kaifen Chang
+- 授權：MIT License
+
+如有問題或建議，歡迎透過 GitHub Issues 回報。
 
 ---
 
-# FocusCut (English)
+# FocusCut – Reading Overlay (English)
 
-
+FocusCut is a Chrome reading-assistance extension that adds reading cards, a reading mask, sticky notes, and highlighting tools to web pages. It helps reduce visual distractions, organize information, and maintain reading focus.
 
 ## Features
 
-- **Dividers**: Add horizontal dividers to separate content sections
-- **Reading Cards**: Use semi-transparent colored overlays to highlight important content
-- **Sticky Notes**: Add editable sticky notes to record notes and comments
-- **Custom Colors**: All elements support custom colors to suit personal preferences
-- **Drag & Resize**: All elements can be freely dragged and resized
-- **Auto-Save**: Page elements are automatically saved and persist after page refresh
-- **Multi-language Support**: Interface available in multiple languages
+- **Reading Cards**: Place translucent cards over selected areas of a page.
+- **Reading Mask**: Cover the upper and lower parts of the page while keeping the reading area visible.
+- **Sticky Notes**: Add editable and movable notes to web pages.
+- **Highlighter Toolbox**: Highlight page text and remove marks with the eraser.
+- **Flexible Layout**: Move, resize, and lock reading cards and sticky notes.
+- **Automatic Saving**: FocusCut content is stored locally for each page and restored after refresh.
+- **Clear This Page**: Remove all FocusCut content from the current page after confirmation.
+- **Multilingual UI**: Supports Traditional Chinese, Simplified Chinese, and English.
 
-## Installation
+## Manual Installation
 
-1. Download from the [Chrome Web Store](https://chrome.google.com/webstore) (coming soon)
-2. Manual Installation:
-   - Download this repository and extract it
-   - Open `chrome://extensions/` in Chrome browser
-   - Enable "Developer mode"
-   - Click "Load unpacked"
-   - Select the extracted directory
+1. Download and extract this repository.
+2. Open `chrome://extensions/` in Chrome.
+3. Enable **Developer mode**.
+4. Click **Load unpacked**.
+5. Select the project directory.
 
 ## How to Use
 
-1. Click the FocusOverlay icon in the browser toolbar
-2. Select the type of element and color from the popup
-3. The element will be automatically added to the current page
-4. Drag to adjust element position, or use the handle in the bottom-right corner to resize
-5. Sticky notes support direct text editing
-6. Click the × button on elements to delete them
+1. Click the **FocusCut** icon in the browser toolbar.
+2. Choose a color under Reading Card or Sticky Note, then click **Add**.
+3. Use the switches to enable the Reading Mask or Highlighter Toolbox.
+4. Drag items to move them; use the corner handle to resize or the lock button to pin them to the viewport.
+5. Use an item's delete control to remove it individually.
+6. Use the trash icon in the popup to clear all FocusCut content from the current page, or select `?` for instructions.
 
-## Privacy Policy
+## Data and Privacy
 
-FocusOverlay respects your privacy:
-- Does not collect any personal information
-- Does not track your browsing activity
-- All data is stored locally and is not uploaded to any servers
+- No account or login is required.
+- FocusCut does not collect personal information or track browsing activity.
+- Reading cards, masks, notes, and highlights are stored only in Chrome's local extension storage.
+- Page content and user data are never sent to external servers.
 
-## Developer Information
+See the full [Privacy Policy](privacy.html).
 
+## Development and Testing
+
+```bash
+node --test tests/*.test.js
+```
+
+## Project Information
+
+- Display name: FocusCut – Reading Overlay
+- Version: v1.3
 - Developer: Kaifen Chang
-- Version: 1.0
 - License: MIT License
 
-## Feedback and Support
-
-For issues or suggestions, please submit feedback through GitHub Issues.
+Please use GitHub Issues for bug reports and suggestions.
 
 ---
 
-© 2025 Kaifen Chang. All Rights Reserved. 
+© 2025 Kaifen Chang. All Rights Reserved.

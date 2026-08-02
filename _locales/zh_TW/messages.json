@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "FocusOverlay",
+    "message": "FocusCut – Reading Overlay",
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "使用分隔線、透明色塊與便利貼功能，自訂你的閱讀區塊，讓每一次專注閱讀都更有結構。資料僅儲存在 Chrome 本機。",
+    "message": "使用閱讀色卡、遮色片、便利貼與螢光筆聚焦網頁內容；所有資料只會儲存在 Chrome 本機。",
     "description": "Extension description"
   },
   "dividerTitle": {
@@ -30,6 +30,22 @@
   "addNote": {
     "message": "新增便利貼",
     "description": "Button text for adding a sticky note"
+  },
+  "addAction": {
+    "message": "新增",
+    "description": "Short add action label"
+  },
+  "colorOption": {
+    "message": "顏色選項",
+    "description": "Accessible label for a color choice"
+  },
+  "statusOn": {
+    "message": "開啟",
+    "description": "Enabled toggle status"
+  },
+  "statusOff": {
+    "message": "關閉",
+    "description": "Disabled toggle status"
   },
   "customColor": {
     "message": "自訂顏色",
@@ -72,7 +88,7 @@
     "description": "Tagline on the instructions page"
   },
   "errorUnsupported": {
-    "message": "FocusOverlay 無法在此頁面上運作。",
+    "message": "FocusCut 無法在此頁面上運作。",
     "description": "Error message for unsupported pages"
   },
   "errorUseOnRegular": {
@@ -84,7 +100,7 @@
     "description": "Copyright page title"
   },
   "aboutLink": {
-    "message": "關於 FocusOverlay",
+    "message": "關於 FocusCut",
     "description": "Link text to about page"
   },
   "versionInfo": {
@@ -128,7 +144,7 @@
     "description": "Sponsor developer section title"
   },
   "sponsorMessage": {
-    "message": "FocusOverlay 是我獨立開發的小工具，希望它能幫助你更專注地閱讀。\n如果你覺得好用，可以考慮請我喝杯咖啡 💛",
+    "message": "FocusCut 是我獨立開發的小工具，希望它能幫助你更專注地閱讀。\n如果你覺得好用，可以考慮請我喝杯咖啡 💛",
     "description": "Sponsor message for the developer"
   },
   "readingMaskTitle": {
@@ -213,7 +229,19 @@
     "description": "Instructions page title"
   },
   "aboutInfoTooltip": {
-    "message": "關於 FocusOverlay",
+    "message": "關於 FocusCut",
     "description": "Tooltip for info button on instructions page"
+  },
+  "clearCurrentPage": {
+    "message": "清除此頁",
+    "description": "Tooltip and accessible label for clearing the current page"
+  },
+  "clearCurrentPageConfirm": {
+    "message": "要清除目前頁面的所有 FocusCut 內容嗎？此操作無法復原。",
+    "description": "Confirmation shown before clearing the current page"
+  },
+  "clearCurrentPageError": {
+    "message": "無法清除此頁，請重新整理後再試。",
+    "description": "Error shown when clearing the current page fails"
   }
 }
