@@ -1,7 +1,7 @@
 # FocusCut – Reading Overlay
 
 <div align="center">
-  <img src="banner/FocusCut.png" alt="FocusCut – Reading Overlay" width="600">
+  <img src="Banner/FocusCut.png" alt="FocusCut – Reading Overlay" width="600">
 </div>
 
 FocusCut 是一款 Chrome 閱讀輔助擴充功能，可在網頁上加入閱讀色卡、遮色片、便利貼與螢光筆，幫助使用者降低視覺干擾、整理資訊並維持閱讀焦點。
